@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Gaming - Panel de Productos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .formulario { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; width: 50%; }
+        input { display: block; margin-bottom: 10px; width: 90%; padding: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>Añadir Nuevo Componente/Juego</h2>
+    
+    <div class="formulario">
+        <!-- El formulario envía los datos a la ruta /productos/guardar del controlador -->
+        <form th:action="@{/productos/guardar}" th:object="${nuevoProducto}" method="post">
+            <label>Nombre del Producto:</label>
+            <input type="text" th:field="*{nombre}" placeholder="Ej: Laptop ASUS ROG Strix G17" required />
+            
+            <label>Descripción:</label>
+            <input type="text" th:field="*{descripcion}" placeholder="Ej: RTX 4060, Ryzen 9" />
+            
+            <label>Precio Base ($):</label>
+            <input type="number" step="0.01" th:field="*{precioBase}" placeholder="0.00" required />
+            
+            <button type="submit">Guardar Producto</button>
+        </form>
+    </div>
+
+    <h2>Inventario Global (Catálogo)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Bucle que recorre todos los productos guardados en Postgres -->
+            <tr th:each="prod : ${listaProductos}">
+                <td th:text="${prod.idProducto}">1</td>
+                <td th:text="${prod.nombre}">Producto</td>
+                <td th:text="${prod.descripcion}">Descripción</td>
+                <td th:text="${'$' + prod.precioBase}">$0.00</td>
+            </tr>
+        </tbody>
+    </table>
