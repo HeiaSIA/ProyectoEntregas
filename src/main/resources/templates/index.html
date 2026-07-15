@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Gaming - Tienda Oficial</title>
+  <!-- Cargamos Tailwind CSS desde CDN para diseñar de forma rápida -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Personalizamos Tailwind con la paleta de colores de Nexus Gaming
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nexusDark: '#0B0C10',   /* Fondo ultra oscuro */
+            nexusCard: '#1A1A24',   /* Fondo de tarjetas */
+            nexusPurple: '#BC13FE', /* Morado Neón principal */
+            nexusCyan: '#00F0FF',   /* Azul Cian secundario */
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-nexusDark text-gray-100 font-sans min-h-screen relative">
+
+  <!-- ================= 1. NAV BAR (BARRA DE NAVEGACIÓN) ================= -->
+  <header class="border-b border-nexusPurple/30 bg-nexusDark/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo de la Empresa -->
+      <div class="flex items-center gap-2">
+        <span class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-nexusCyan to-nexusPurple drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
+          NEXUS
+        </span>
+        <span class="text-xs font-bold uppercase text-nexusPurple tracking-widest px-2 py-0.5 border border-nexusPurple rounded">
+          Gaming
+        </span>
+      </div>
+
+      <!-- Barra de Búsqueda de Hardware -->
+      <div class="w-full md:w-1/2 relative">
+        <input 
+          type="text" 
+          placeholder="Buscar procesadores, tarjetas gráficas, SSDs..." 
+          class="w-full bg-nexusCard text-sm text-gray-200 pl-4 pr-10 py-2.5 rounded-lg border border-nexusCyan/30 focus:border-nexusCyan focus:outline-none focus:ring-1 focus:ring-nexusCyan transition-all duration-300"
+        >
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-nexusCyan">🔍</span>
+      </div>
+
+      <!-- Menú de Usuario / Carrito -->
+      <nav class="flex items-center gap-6 text-sm font-semibold">
+        <button onclick="abrirModal('modalRegistro')" class="hover:text-nexusPurple transition-colors cursor-pointer">Crear cuenta</button>
+        <button onclick="abrirModal('modalLogin')" class="hover:text-nexusCyan transition-colors cursor-pointer">Ingresar</button>
+        <a href="#" class="text-nexusPurple hover:underline transition-all">Mis compras</a>
+        <button class="relative p-1">
+          <span class="text-xl">🛒</span>
+          <span class="absolute -top-1 -right-1 bg-nexusPurple text-[10px] text-white font-bold px-1.5 py-0.5 rounded-full">0</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- ================= 2. BANNER PRINCIPAL (CAROUSEL / SLIDER) ================= -->
+  <section class="max-w-7xl mx-auto px-4 mt-6">
+    <div class="relative h-[250px] md:h-[400px] w-full overflow-hidden rounded-2xl border border-nexusPurple/30 shadow-[0_0_25px_rgba(188,19,254,0.15)]">
+      
+      <!-- Imagen 1 -->
+      <div class="slide absolute inset-0 opacity-100 transition-opacity duration-1000 ease-in-out">
+        <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=1200&auto=format&fit=crop" 
+             alt="Setup Gaming Nexus 1" 
+             class="w-full h-full object-cover object-center">
+        <div class="absolute inset-0 bg-gradient-to-t from-nexusDark via-nexusDark/40 to-transparent"></div>
+        <div class="absolute bottom-8 left-8 md:left-16 max-w-lg z-10">
+          <span class="bg-nexusPurple text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Nuevo Ingreso</span>
+          <h2 class="text-2xl md:text-4xl font-extrabold text-white mt-3 drop-shadow">LO MEJOR DEL HARDWARE MUNDIAL</h2>
+          <p class="text-gray-300 text-sm mt-2">Arma la PC de tus sueños con las piezas más potentes del mercado.</p>
+        </div>
+      </div>
+
+      <!-- Imagen 2 -->
+      <div class="slide absolute inset-0 opacity-0 transition-opacity duration-1000 ease-in-out">
+        <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=1200&auto=format&fit=crop" 
+             alt="Setup Gaming Nexus 2" 
+             class="w-full h-full object-cover object-center">
+        <div class="absolute inset-0 bg-gradient-to-t from-nexusDark via-nexusDark/40 to-transparent"></div>
+        <div class="absolute bottom-8 left-8 md:left-16 max-w-lg z-10">
+          <span class="bg-nexusCyan text-nexusDark text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Logística Nexus</span>
+          <h2 class="text-2xl md:text-4xl font-extrabold text-white mt-3 drop-shadow">NEXUS LLEGA DONDE ESTÁS TU JUEGO</h2>
+          <p class="text-gray-300 text-sm mt-2">Envíos ultra rápidos y 100% asegurados a todo el país.</p>
+        </div>
+      </div>
+
+      <!-- Imagen 3 -->
+      <div class="slide absolute inset-0 opacity-0 transition-opacity duration-1000 ease-in-out">
+        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop" 
+             alt="Setup Gaming Nexus 3" 
+             class="w-full h-full object-cover object-center">
+        <div class="absolute inset-0 bg-gradient-to-t from-nexusDark via-nexusDark/40 to-transparent"></div>
+        <div class="absolute bottom-8 left-8 md:left-16 max-w-lg z-10">
+          <span class="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Garantía Total</span>
+          <h2 class="text-2xl md:text-4xl font-extrabold text-white mt-3 drop-shadow">SOPORTE PREMIUM 24/7</h2>
+          <p class="text-gray-300 text-sm mt-2">Atención personalizada por expertos en armado y optimización.</p>
+        </div>
+      </div>
+
+      <!-- Controles visuales (Indicadores inferiores) -->
+      <div class="absolute bottom-4 right-8 flex gap-2 z-20">
+        <span class="dot w-2 h-2 rounded-full bg-nexusPurple transition-all duration-300"></span>
+        <span class="dot w-2 h-2 rounded-full bg-gray-600 transition-all duration-300"></span>
+        <span class="dot w-2 h-2 rounded-full bg-gray-600 transition-all duration-300"></span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= 3. SECCIÓN DE BENEFICIOS (GRID DE TARJETAS) ================= -->
+  <main class="max-w-7xl mx-auto px-4 py-12">
+    
+    <div class="text-center mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+        TODO EL PODER PARA TU SETUP
+      </h1>
+      <p class="text-nexusCyan font-medium text-sm md:text-base tracking-wide uppercase">
+        Envíos ultra rápidos a nivel nacional
+      </p>
+    </div>
+
+    <!-- Grid de 6 Columnas ajustable -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+      
+      <!-- Tarjeta 1 - Mi Cuenta -->
+      <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
+        <div>
+          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">👤</div>
+          <h3 class="font-bold text-white mb-2">Mi Cuenta</h3>
+          <p class="text-xs text-gray-400 leading-relaxed">Accede a tus configuraciones y acumula puntos Nexus.</p>
+        </div>
+        <button onclick="abrirModal('modalLogin')" class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20 cursor-pointer">
+          Ingresar
+        </button>
+      </div>
+
+      <!-- Tarjeta 2 - Envíos Rápidos -->
+      <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
+        <div>
+          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🚚</div>
+          <h3 class="font-bold text-white mb-2">Envíos Rápidos</h3>
+          <p class="text-xs text-gray-400 leading-relaxed">Rastrea tu pedido de componentes en tiempo real.</p>
+        </div>
+        <button class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
+          Seguir envío
+        </button>
+      </div>
+
+      <!-- Tarjeta 3 - Pagos Seguros -->
+      <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
+        <div>
+          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">💳</div>
+          <h3 class="font-bold text-white mb-2">Pagos Seguros</h3>
+          <p class="text-xs text-gray-400 leading-relaxed">Paga con tarjetas de crédito, débito o cripto.</p>
+        </div>
+        <button class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20">
+          Ver métodos
+        </button>
+      </div>
+
+      <!-- Tarjeta 4 - Garantía Nexus -->
+      <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
+        <div>
+          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🛡️</div>
+          <h3 class="font-bold text-white mb-2">Garantía Nexus</h3>
+          <p class="text-xs text-gray-400 leading-relaxed">Todos tus componentes cuentan con garantía directa de fábrica.</p>
+        </div>
+        <button class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
+          Ver póliza
+        </button>
+      </div>
+
+      <!-- Tarjeta 5 - Lo Más Vendido -->
+      <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
+        <div>
+          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🔥</div>
+          <h3 class="font-bold text-white mb-2">Lo Más Vendido</h3>
+          <p class="text-xs text-gray-400 leading-relaxed">Explora el hardware más demandado por la comunidad.</p>
+        </div>
+        <button class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20">
+          Ver catálogo
+        </button>
+      </div>
+
+      <!-- Tarjeta 6 - Arma tu PC -->
+      <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
+        <div>
+          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🛠️</div>
+          <h3 class="font-bold text-white mb-2">Arma tu PC</h3>
+          <p class="text-xs text-gray-400 leading-relaxed">Usa nuestro configurador y asegura compatibilidad.</p>
+        </div>
+        <button class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
+          Iniciar Setup
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ========================================================================= -->
+  <!-- ======================= SUBVENTANAS EMERGENTES (MODALES) ================ -->
+  <!-- ========================================================================= -->
+
+  <!-- MODAL 1: REGISTRO DE USUARIO -->
+  <div id="modalRegistro" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="max-w-md w-full bg-nexusCard rounded-2xl border border-nexusPurple/40 p-8 shadow-[0_0_35px_rgba(188,19,254,0.25)] mx-4 relative transform scale-95 transition-transform duration-300">
+      
+      <!-- Botón de Cerrar (X) -->
+      <button onclick="cerrarModal('modalRegistro')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+
+      <!-- Encabezado -->
+      <div class="text-center mb-6">
+        <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-nexusCyan to-nexusPurple drop-shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+          ÚNETE A NEXUS
+        </h2>
+        <p class="text-xs text-gray-400 mt-2">Crea tu cuenta de usuario para almacenar tus configuraciones</p>
+      </div>
+
+      <!-- Formulario de Registro -->
+      <form id="formRegistro" onsubmit="enviarRegistro(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-nexusCyan uppercase tracking-wider mb-2">Nombre Completo</label>
+          <input type="text" id="regNombre" required 
+                 class="w-full bg-nexusDark text-sm text-gray-200 px-4 py-3 rounded-lg border border-nexusCyan/20 focus:border-nexusCyan focus:outline-none focus:ring-1 focus:ring-nexusCyan transition-all duration-300"
+                 placeholder="Tu Nombre">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-nexusCyan uppercase tracking-wider mb-2">Correo Electrónico</label>
+          <input type="email" id="regEmail" required 
+                 class="w-full bg-nexusDark text-sm text-gray-200 px-4 py-3 rounded-lg border border-nexusCyan/20 focus:border-nexusCyan focus:outline-none focus:ring-1 focus:ring-nexusCyan transition-all duration-300"
+                 placeholder="correo@ejemplo.com">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-nexusPurple uppercase tracking-wider mb-2">Contraseña</label>
+          <input type="password" id="regPassword" required 
+                 class="w-full bg-nexusDark text-sm text-gray-200 px-4 py-3 rounded-lg border border-nexusPurple/20 focus:border-nexusPurple focus:outline-none focus:ring-1 focus:ring-nexusPurple transition-all duration-300"
+                 placeholder="••••••••">
+        </div>
+
+        <!-- Mensajes de Respuesta -->
+        <p id="msgRegistro" class="text-xs font-semibold hidden"></p>
+
+        <button type="submit" 
+                class="w-full bg-gradient-to-r from-nexusPurple to-indigo-600 text-white font-bold text-sm py-3 px-4 rounded-lg shadow-lg hover:shadow-[0_0_20px_rgba(188,19,254,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer">
+          CREAR MI CUENTA GAMER
+        </button>
+
+        <p class="text-center text-xs text-gray-400 mt-4">
+          ¿Ya eres miembro? 
+          <button type="button" onclick="cambiarModal('modalRegistro', 'modalLogin')" class="text-nexusCyan hover:underline font-semibold focus:outline-none">Inicia Sesión</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL 2: INGRESO DE USUARIO (LOGIN) -->
+  <div id="modalLogin" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="max-w-md w-full bg-nexusCard rounded-2xl border border-nexusCyan/40 p-8 shadow-[0_0_35px_rgba(0,240,255,0.25)] mx-4 relative transform scale-95 transition-transform duration-300">
+      
+      <!-- Botón de Cerrar (X) -->
+      <button onclick="cerrarModal('modalLogin')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+
+      <!-- Encabezado -->
+      <div class="text-center mb-6">
+        <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-nexusPurple to-nexusCyan drop-shadow-[0_0_10px_rgba(188,19,254,0.3)]">
+          LOGIN DE COMBATE
+        </h2>
+        <p class="text-xs text-gray-400 mt-2">Ingresa tus credenciales para acceder al panel oficial</p>
+      </div>
+
+      <!-- Formulario de Login -->
+      <form id="formLogin" onsubmit="enviarLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-nexusCyan uppercase tracking-wider mb-2">Correo Electrónico</label>
+          <input type="email" id="loginEmail" required 
+                 class="w-full bg-nexusDark text-sm text-gray-200 px-4 py-3 rounded-lg border border-nexusCyan/20 focus:border-nexusCyan focus:outline-none focus:ring-1 focus:ring-nexusCyan transition-all duration-300"
+                 placeholder="correo@ejemplo.com">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-nexusPurple uppercase tracking-wider mb-2">Contraseña</label>
+          <input type="password" id="loginPassword" required 
+                 class="w-full bg-nexusDark text-sm text-gray-200 px-4 py-3 rounded-lg border border-nexusPurple/20 focus:border-nexusPurple focus:outline-none focus:ring-1 focus:ring-nexusPurple transition-all duration-300"
+                 placeholder="••••••••">
+        </div>
+
+        <!-- Mensajes de Respuesta -->
+        <p id="msgLogin" class="text-xs font-semibold hidden"></p>
+
+        <button type="submit" 
+                class="w-full bg-gradient-to-r from-nexusCyan to-blue-600 text-black font-extrabold text-sm py-3 px-4 rounded-lg shadow-lg hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer">
+          ACCEDER AL SERVIDOR
+        </button>
+
+        <p class="text-center text-xs text-gray-400 mt-4">
+          ¿No tienes una cuenta? 
+          <button type="button" onclick="cambiarModal('modalLogin', 'modalRegistro')" class="text-nexusPurple hover:underline font-semibold focus:outline-none">Regístrate gratis</button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ================= 4. JAVASCRIPT DE ANIMACIONES Y PETICIONES ================= -->
+  <script>
+    // --- LÓGICA DEL SLIDER ---
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.replace('opacity-100', 'opacity-0');
+        dots[i].classList.replace('bg-nexusPurple', 'bg-gray-600');
+        dots[i].classList.replace('bg-nexusCyan', 'bg-gray-600');
+      });
+      slides[index].classList.replace('opacity-0', 'opacity-100');
+      const activeColor = index % 2 === 0 ? 'bg-nexusPurple' : 'bg-nexusCyan';
+      dots[index].classList.replace('bg-gray-600', activeColor);
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % slides.length;
+      showSlide(currentSlide);
+    }
+    setInterval(nextSlide, 5000);
+
+
+    // --- LÓGICA DE CONTROL DE MODALES (SUBVENTANAS) ---
+    function abrirModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+      }, 10);
+    }
+
+    function cerrarModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.add('opacity-0');
+      modal.querySelector('div').classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    function cambiarModal(modalActual, modalSiguiente) {
+      cerrarModal(modalActual);
+      setTimeout(() => {
+        abrirModal(modalSiguiente);
+      }, 300);
+    }
+
+
+    // --- LÓGICA DE ENVÍO DE DATOS DIRECTO AL BACKEND (AJAX) ---
+    
+    // 1. Registro de usuario apuntando directamente al puerto local 8080
+    function enviarRegistro(event) {
+      event.preventDefault();
+      
+      const nombre = document.getElementById('regNombre').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const msgArea = document.getElementById('msgRegistro');
+
+      fetch('http://localhost:8080/api/auth/registro', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nombre, email, password })
+      })
+      .then(response => {
+        return response.json().then(data => {
+          if (!response.ok) {
+            throw new Error(data.mensaje || 'Error al procesar el registro.');
+          }
+          return data;
+        });
+      })
+      .then(data => {
+        msgArea.textContent = data.mensaje;
+        msgArea.className = "text-xs font-semibold text-green-400";
+        msgArea.classList.remove('hidden');
+        document.getElementById('formRegistro').reset();
+        
+        setTimeout(() => {
+          msgArea.classList.add('hidden');
+          cambiarModal('modalRegistro', 'modalLogin');
+        }, 2000);
+      })
+      .catch(error => {
+        msgArea.textContent = error.message;
+        msgArea.className = "text-xs font-semibold text-red-400";
+        msgArea.classList.remove('hidden');
+      });
+    }
+
+    // 2. Inicio de Sesión apuntando al puerto local 8080
+    function enviarLogin(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const msgArea = document.getElementById('msgLogin');
+
+      fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
+      .then(response => {
+        return response.json().then(data => {
+          if (!response.ok) {
+            throw new Error(data.mensaje || 'Error al iniciar sesión.');
+          }
+          return data;
+        });
+      })
+      .then(data => {
+        msgArea.textContent = "¡Bienvenido de vuelta, " + data.nombre + "!";
+        msgArea.className = "text-xs font-semibold text-green-400";
+        msgArea.classList.remove('hidden');
+        document.getElementById('formLogin').reset();
+
+        setTimeout(() => {
+          msgArea.classList.add('hidden');
+          cerrarModal('modalLogin');
+        }, 1500);
+      })
+      .catch(error => {
+        msgArea.textContent = error.message;
+        msgArea.className = "text-xs font-semibold text-red-400";
+        msgArea.classList.remove('hidden');
+      });
+    }
+  </script>
+
+</body>
+</html>

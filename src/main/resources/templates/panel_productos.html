@@ -4,70 +4,214 @@
     <meta charset="UTF-8">
     <title>Nexus Gaming - Panel de Productos</title>
 
+    <!-- Librería de iconos Boxicons para el lápiz y el basurero -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
     <style>
+        /* Paleta de Colores de Nexus Gaming */
+        :root {
+            --nexus-dark: #0d0e12;
+            --nexus-card: #161920;
+            --nexus-purple: #bc13fe;
+            --nexus-cyan: #00f0ff;
+            --nexus-text: #e2e8f0;
+            --nexus-text-muted: #94a3b8;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--nexus-dark);
+            color: var(--nexus-text);
+            padding: 40px;
+            margin: 0;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-image: linear-gradient(to right, var(--nexus-cyan), var(--nexus-purple));
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            margin-bottom: 20px;
         }
 
         .formulario {
             width: 50%;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 30px;
+            background-color: var(--nexus-card);
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            padding: 25px;
+            margin-bottom: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(188, 19, 254, 0.1);
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--nexus-cyan);
+            margin-bottom: 8px;
         }
 
         input {
             display: block;
-            width: 90%;
-            padding: 8px;
-            margin-bottom: 15px;
+            width: 95%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            background-color: var(--nexus-dark);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 6px;
+            color: var(--nexus-text);
+            font-size: 14px;
+            transition: all 0.3s ease;
         }
 
-        button {
-            padding: 8px 15px;
+        input:focus {
+            outline: none;
+            border-color: var(--nexus-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        /* Contenedor de Botones de Acción en el Formulario */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
             cursor: pointer;
-            background-color: #007BFF;
+            background: linear-gradient(to right, var(--nexus-purple), #6366f1);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
         }
         
-        button:hover {
-            background-color: #0056b3;
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
         }
 
+        .btn-cancelar {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #334155;
+            color: var(--nexus-text);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #475569;
+        }
+
+        /* Tabla de Inventario */
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 25px;
+            background-color: var(--nexus-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         table th,
         table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+            padding: 14px;
             text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         table th {
-            background-color: #f2f2f2;
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--nexus-cyan);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        table tbody tr:hover {
+            background-color: rgba(188, 19, 254, 0.03);
         }
 
         img {
-            border-radius: 5px;
+            border-radius: 8px;
             object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Botones de acción dentro de la tabla */
+        .btn-editar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #eab308;
+            color: #000;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-eliminar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #ef4444;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-editar:hover {
+            background-color: #ca8a04;
+            transform: translateY(-1px);
+        }
+
+        .btn-eliminar:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
         }
 
         /* Estilos para los mensajes de error */
         .alerta-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
             width: 50%;
+            font-size: 14px;
         }
     </style>
 
@@ -76,13 +220,16 @@
 
 <h2>Añadir Nuevo Componente/Juego</h2>
 
-<!-- SECCIÓN NUEVA: Mostrar errores enviados por el controlador -->
+<!-- Mostrar errores enviados por el controlador -->
 <div th:if="${param.error}" class="alerta-error">
     <span th:if="${param.error[0] == 'imagenVacia'}">
         ⚠️ Error: Debes seleccionar una imagen obligatoriamente.
     </span>
     <span th:if="${param.error[0] == 'errorSubiendoArchivo'}">
         ⚠️ Error: Hubo un problema interno al guardar la imagen en el servidor. Revisa la consola.
+    </span>
+    <span th:if="${param.error[0] == 'productoNoEncontrado'}">
+        ⚠️ Error: El producto solicitado no existe o fue eliminado.
     </span>
 </div>
 
@@ -92,6 +239,9 @@
           th:object="${nuevoProducto}"
           method="post"
           enctype="multipart/form-data">
+
+        <!-- Campo oculto para almacenar la ID cuando estamos editando -->
+        <input type="hidden" th:field="*{idProducto}" />
 
         <label>Nombre del Producto:</label>
         <input
@@ -115,15 +265,26 @@
                 required>
 
         <label>Imagen del producto:</label>
+        <!-- No es requerida en edición para evitar obligar al usuario a subirla de nuevo -->
         <input
                 type="file"
                 name="archivoImagen"
                 accept="image/*"
-                required>
+                th:required="${nuevoProducto.idProducto == null}">
 
-        <button type="submit">
-            Guardar Producto
-        </button>
+        <!-- Contenedor con comportamiento dinámico para los botones -->
+        <div class="form-actions">
+            <button type="submit" th:text="${nuevoProducto.idProducto != null ? 'Actualizar Producto' : 'Guardar Producto'}">
+                Guardar Producto
+            </button>
+            
+            <!-- El botón de cancelar solo se muestra si estamos editando (idProducto != null) -->
+            <a th:if="${nuevoProducto.idProducto != null}" 
+               th:href="@{/productos}" 
+               class="btn-cancelar">
+                Cancelar
+            </a>
+        </div>
 
     </form>
 
@@ -140,6 +301,7 @@
         <th>Nombre</th>
         <th>Descripción</th>
         <th>Precio</th>
+        <th>Acciones</th>
     </tr>
     </thead>
 
@@ -149,20 +311,34 @@
         <td th:text="${prod.idProducto}"></td>
 
         <td>
-            <!-- Asegúrate de que las imágenes estáticas estén configuradas en Spring Boot -->
             <img th:if="${prod.imagen != null}" 
                  th:src="@{'/imagenes/' + ${prod.imagen}}"
                  alt="Producto"
                  width="120"
                  height="120">
-            <span th:if="${prod.imagen == null}">Sin imagen</span>
+            <span th:if="${prod.imagen == null}" style="color: var(--nexus-text-muted)">Sin imagen</span>
         </td>
 
         <td th:text="${prod.nombre}"></td>
 
         <td th:text="${prod.descripcion}"></td>
 
-        <td th:text="${'$' + prod.precioBase}"></td>
+        <!-- Precio formateado con 2 decimales y separador de miles -->
+        <td th:text="${'$' + #numbers.formatDecimal(prod.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+
+        <!-- Columna de Botones de Acción (Editar / Eliminar con Boxicons) -->
+        <td>
+            <a th:href="@{/productos/editar/{id}(id=${prod.idProducto})}" 
+               class="btn-editar">
+                <i class='bx bxs-edit-alt'></i> Editar
+            </a>
+            
+            <a th:href="@{/productos/eliminar/{id}(id=${prod.idProducto})}" 
+               onclick="return confirm('¿Seguro que deseas eliminar este componente?');"
+               class="btn-eliminar">
+                <i class='bx bxs-trash'></i> Eliminar
+            </a>
+        </td>
 
     </tr>
     </tbody>
