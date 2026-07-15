@@ -3,52 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <title>Nexus Gaming - Panel de Productos</title>
+
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .formulario { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; width: 50%; }
-        input { display: block; margin-bottom: 10px; width: 90%; padding: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .formulario {
+            width: 50%;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            display: block;
+            width: 90%;
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+
+        img {
+            border-radius: 5px;
+            object-fit: cover;
+        }
+
+        /* Estilos para los mensajes de error */
+        .alerta-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            width: 50%;
+        }
     </style>
+
 </head>
 <body>
 
-    <h2>Añadir Nuevo Componente/Juego</h2>
-    
-    <div class="formulario">
-        <!-- El formulario envía los datos a la ruta /productos/guardar del controlador -->
-        <form th:action="@{/productos/guardar}" th:object="${nuevoProducto}" method="post">
-            <label>Nombre del Producto:</label>
-            <input type="text" th:field="*{nombre}" placeholder="Ej: Laptop ASUS ROG Strix G17" required />
-            
-            <label>Descripción:</label>
-            <input type="text" th:field="*{descripcion}" placeholder="Ej: RTX 4060, Ryzen 9" />
-            
-            <label>Precio Base ($):</label>
-            <input type="number" step="0.01" th:field="*{precioBase}" placeholder="0.00" required />
-            
-            <button type="submit">Guardar Producto</button>
-        </form>
-    </div>
+<h2>Añadir Nuevo Componente/Juego</h2>
 
-    <h2>Inventario Global (Catálogo)</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Precio</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Bucle que recorre todos los productos guardados en Postgres -->
-            <tr th:each="prod : ${listaProductos}">
-                <td th:text="${prod.idProducto}">1</td>
-                <td th:text="${prod.nombre}">Producto</td>
-                <td th:text="${prod.descripcion}">Descripción</td>
-                <td th:text="${'$' + prod.precioBase}">$0.00</td>
-            </tr>
-        </tbody>
-    </table>
+<!-- SECCIÓN NUEVA: Mostrar errores enviados por el controlador -->
+<div th:if="${param.error}" class="alerta-error">
+    <span th:if="${param.error[0] == 'imagenVacia'}">
+        ⚠️ Error: Debes seleccionar una imagen obligatoriamente.
+    </span>
+    <span th:if="${param.error[0] == 'errorSubiendoArchivo'}">
+        ⚠️ Error: Hubo un problema interno al guardar la imagen en el servidor. Revisa la consola.
+    </span>
+</div>
+
+<div class="formulario">
+
+    <form th:action="@{/productos/guardar}"
+          th:object="${nuevoProducto}"
+          method="post"
+          enctype="multipart/form-data">
+
+        <label>Nombre del Producto:</label>
+        <input
+                type="text"
+                th:field="*{nombre}"
+                placeholder="Ej: Laptop ASUS ROG Strix G17"
+                required>
+
+        <label>Descripción:</label>
+        <input
+                type="text"
+                th:field="*{descripcion}"
+                placeholder="Ej: RTX 4060, Ryzen 9">
+
+        <label>Precio Base ($):</label>
+        <input
+                type="number"
+                step="0.01"
+                th:field="*{precioBase}"
+                placeholder="0.00"
+                required>
+
+        <label>Imagen del producto:</label>
+        <input
+                type="file"
+                name="archivoImagen"
+                accept="image/*"
+                required>
+
+        <button type="submit">
+            Guardar Producto
+        </button>
+
+    </form>
+
+</div>
+
+<h2>Inventario Global (Catálogo)</h2>
+
+<table>
+
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Imagen</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Precio</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="prod : ${listaProductos}">
+
+        <td th:text="${prod.idProducto}"></td>
+
+        <td>
+            <!-- Asegúrate de que las imágenes estáticas estén configuradas en Spring Boot -->
+            <img th:if="${prod.imagen != null}" 
+                 th:src="@{'/imagenes/' + ${prod.imagen}}"
+                 alt="Producto"
+                 width="120"
+                 height="120">
+            <span th:if="${prod.imagen == null}">Sin imagen</span>
+        </td>
+
+        <td th:text="${prod.nombre}"></td>
+
+        <td th:text="${prod.descripcion}"></td>
+
+        <td th:text="${'$' + prod.precioBase}"></td>
+
+    </tr>
+    </tbody>
+
+</table>
+
+</body>
+</html>
