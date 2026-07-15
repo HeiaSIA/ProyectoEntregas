@@ -111,14 +111,7 @@
 <script th:inline="javascript">
 /*<![CDATA[*/
 
-    // Inicializar el mapa
-    const mapa = L.map('mapa-simulacion').setView([-1.8312, -78.1834], 7);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(mapa);
-
-    // Cargar todos los puntos de la ruta desde Thymeleaf
+    // 1. Cargar todos los puntos desde TU BASE DE DATOS a través de Thymeleaf
     const puntosRuta = [];
     
     /*[# th:each="sede : ${rutaOptima}"]*/
@@ -129,33 +122,81 @@
     });
     /*[/]*/
 
-    if (puntosRuta.length > 0) {
-        const coordenadas = [];
-        
-        // Dibujar los marcadores de las sedes involucradas en la ruta
-        puntosRuta.forEach((punto, index) => {
-            coordenadas.push([punto.lat, punto.lng]);
-            
-            let colorIcono = 'blue';
-            if(index === 0) colorIcono = 'green'; // Origen verde
-            if(index === puntosRuta.length - 1) colorIcono = 'red'; // Destino rojo
+    // 2. Inicializar el mapa (Aún sin centrar)
+    const mapa = L.map('mapa-simulacion');
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapa);
 
-            // Crear marcador simple
+
+    // 3. Trabajar estrictamente con los datos de tu DB
+    if (puntosRuta.length > 0) {
+        
+        // Nos ubicamos usando la latitud y longitud de tu primer sede (Origen)
+        mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 7);
+
+        // Dibujar los marcadores en las coordenadas exactas de tu DB
+        puntosRuta.forEach((punto, index) => {
             L.marker([punto.lat, punto.lng])
                 .addTo(mapa)
                 .bindPopup(`<b>Paso ${index + 1}:</b> ${punto.nombre}`)
                 .openPopup();
         });
 
-        // Trazar visualmente el camino óptimo uniendo los puntos (Criterio 5 de la Rúbrica)
-        const polyline = L.polyline(coordenadas, {
-            color: '#2563eb', // Línea azul de ruta
-            weight: 5,
-            opacity: 0.8,
-            smoothFactor: 1
-        }).addTo(mapa);
+        // Si hay más de una sede, pedimos a OSRM que busque la carretera entre TUS coordenadas
+        if (puntosRuta.length > 1) {
+            
+            // Unimos TUS longitudes y latitudes para enviarlas a OSRM
+            const coordsString = puntosRuta.map(p => `${p.lng},${p.lat}`).join(';');
+            const urlOSRM = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
 
-        // Centrar y enfocar automáticamente el mapa sobre la ruta calculada
+            fetch(urlOSRM)
+                .then(response => {
+                    if (!response.ok) throw new Error("Error en el servidor OSRM");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.routes && data.routes.length > 0) {
+                        // OSRM devuelve la ruta por la carretera basándose en tus puntos
+                        const coordsRutaReal = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+                        const polyline = L.polyline(coordsRutaReal, {
+                            color: '#2563eb', // Línea azul de ruta
+                            weight: 5,
+                            opacity: 0.85,
+                            smoothFactor: 1
+                        }).addTo(mapa);
+
+                        // Ajustamos la vista para que toda tu ruta encaje en la pantalla
+                        mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+                    } else {
+                        trazarLineaRectaRespaldo();
+                    }
+                })
+                .catch(error => {
+                    console.error("No se pudo calcular la ruta por carretera:", error);
+                    trazarLineaRectaRespaldo();
+                });
+
+        } else {
+            // Si solo es un punto, hacemos zoom en esa única coordenada de tu DB
+            mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 13);
+        }
+    } else {
+        // Solo si tu DB no devuelve nada (estado inicial), ponemos una vista general
+        mapa.setView([-1.8312, -78.1834], 6);
+    }
+
+    // Función auxiliar: Si no hay internet o falla OSRM, une tus coordenadas con línea recta
+    function trazarLineaRectaRespaldo() {
+        const coordenadasRectas = puntosRuta.map(p => [p.lat, p.lng]);
+        const polyline = L.polyline(coordenadasRectas, {
+            color: '#ef4444', 
+            weight: 4,
+            dashArray: '5, 10',
+            opacity: 0.7
+        }).addTo(mapa);
         mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
     }
 
