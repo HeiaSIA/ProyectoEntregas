@@ -410,6 +410,7 @@
     }
 
     // 2. Inicio de Sesión apuntando al puerto local 8080
+// Reemplaza únicamente tu función enviarLogin por esta:
     function enviarLogin(event) {
       event.preventDefault();
 
@@ -433,14 +434,19 @@
         });
       })
       .then(data => {
+        // 1. Guardar el nombre en el navegador temporalmente
+        localStorage.setItem('usuario_nombre', data.nombre);
+        
         msgArea.textContent = "¡Bienvenido de vuelta, " + data.nombre + "!";
         msgArea.className = "text-xs font-semibold text-green-400";
         msgArea.classList.remove('hidden');
         document.getElementById('formLogin').reset();
 
+        // 2. Redirigir al catálogo tras 1.5 segundos
         setTimeout(() => {
           msgArea.classList.add('hidden');
           cerrarModal('modalLogin');
+          window.location.href = '/catalogo'; // <--- REDIRECCIÓN AL NUEVO HTML
         }, 1500);
       })
       .catch(error => {
