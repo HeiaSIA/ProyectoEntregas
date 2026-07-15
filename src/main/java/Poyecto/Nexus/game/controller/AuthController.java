@@ -23,31 +23,36 @@ public class AuthController {
 
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody Map<String, String> datos) {
-        String nombre = datos.get("nombre");
-        String email = datos.get("email");
-        String password = datos.get("password");
+        try {
+            String nombre = datos.get("nombre");
+            String email = datos.get("email");
+            String password = datos.get("password");
 
-        // 1. Validar si el correo ya existe en la base de datos
-        if (usuarioRepository.existsByEmail(email)) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", "El correo ya está registrado en Nexus."));
+            // 1. Validar si el correo ya existe en la base de datos
+            if (usuarioRepository.existsByEmail(email)) {
+                return ResponseEntity.badRequest().body(Map.of("mensaje", "El correo ya está registrado en Nexus."));
+            }
+
+            // 2. Buscar el rol ID 1. Si no existe en tu tabla "roles", lo creamos de forma segura
+            Rols rolPorDefecto = rolsRepository.findById(1L).orElseGet(() -> {
+                Rols nuevoRol = new Rols();
+                nuevoRol.setNombre("CLIENTE"); // Nombre obligatorio para evitar el nullable = false
+                return rolsRepository.save(nuevoRol); // Se guarda y la base de datos le asignará el ID 1 de forma automática
+            });
+
+            // 3. Crear el nuevo usuario y asociarle el rol seguro
+            Usuario nuevoUsuario = new Usuario(nombre, email, password, rolPorDefecto);
+
+            // 4. Guardar definitivamente en la base de datos
+            usuarioRepository.save(nuevoUsuario);
+
+            return ResponseEntity.ok(Map.of("mensaje", "¡Cuenta creada con éxito gamer!"));
+
+        } catch (Exception e) {
+            // Imprime el error real en la consola de STS para que no andemos a ciegas
+            e.printStackTrace(); 
+            return ResponseEntity.status(500).body(Map.of("mensaje", "Error interno en el servidor: " + e.getMessage()));
         }
-
-        // 2. Buscar el rol ID 1. Si la tabla está vacía, lo crea automáticamente para que no falle la inserción
-        Rols rolPorDefecto = rolsRepository.findById(1L).orElseGet(() -> {
-            Rols nuevoRol = new Rols();
-            nuevoRol.setIdRol(1L); // Establece el ID 1
-            // Si tu entidad Rols tiene un campo para el nombre del rol, puedes descomentar la siguiente línea:
-            // nuevoRol.setNombre("CLIENTE"); 
-            return rolsRepository.save(nuevoRol);
-        });
-
-        // 3. Crear el nuevo usuario y asociarle el rol seguro
-        Usuario nuevoUsuario = new Usuario(nombre, email, password, rolPorDefecto);
-
-        // 4. Guardar definitivamente en la base de datos
-        usuarioRepository.save(nuevoUsuario);
-
-        return ResponseEntity.ok(Map.of("mensaje", "¡Cuenta creada con éxito gamer!"));
     }
 
     @PostMapping("/login")
