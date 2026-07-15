@@ -4,62 +4,163 @@
     <meta charset="UTF-8">
     <title>Nexus Gaming - Enlazar Sedes</title>
     <style>
+        /* Estilos Base Modernos */
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
         body { background:#f4f6f9; min-height:100vh; display:flex; justify-content:center; align-items:center; padding:40px; }
-        .card { width:100%; max-width:600px; background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); }
-        .header { background:#10b981; color:white; padding:30px; }
-        .header h1 { font-size:28px; margin-bottom:8px; }
-        .header p { opacity: 0.9; font-size: 15px; }
-        form { padding:35px; display:flex; flex-direction:column; }
-        label { margin-bottom:8px; color:#374151; font-weight:600; }
-        select, input { padding:14px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
+        
+        /* Contenedor Principal (Más ancho para el diseño de dos columnas) */
+        .container { width:100%; max-width:1250px; display:flex; flex-direction:column; gap:20px; }
+        
+        /* Layout de Rejilla: 2 Columnas */
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 1fr 1.2fr; /* Formulario a la izquierda, Tabla ligeramente más ancha a la derecha */
+            gap: 30px; 
+            align-items: start; /* Evita que las tarjetas se estiren de forma asimétrica */
+        }
+        
+        /* Tarjetas */
+        .card { width:100%; background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); }
+        .header { background:#10b981; color:white; padding:25px 30px; }
+        .header h1 { font-size:24px; margin-bottom:6px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        /* Formularios */
+        form { padding:30px; display:flex; flex-direction:column; }
+        label { margin-bottom:8px; color:#374151; font-weight:600; font-size: 14px; }
+        select, input { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; transition: .2s; }
         select:focus, input:focus { border-color:#10b981; box-shadow:0 0 0 4px rgba(16,185,129,.15); }
         input[readonly] { background: #e5e7eb; color: #4b5563; font-weight: bold; cursor: not-allowed; }
-        button { background:#10b981; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; margin-top: 10px; }
+        
+        /* Botones */
+        button { background:#10b981; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:.3s; margin-top: 5px; }
         button:hover { background:#059669; transform:translateY(-2px); }
+        
+        /* Indicadores de carga e info */
         .info-calculo { font-size: 13px; color: #6b7280; margin-top: -15px; margin-bottom: 20px; font-style: italic; }
+        
+        /* Alertas de Error y Éxito */
+        .alerta { padding: 15px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .alerta-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alerta-exito { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+        /* Estilos de Tabla Premium */
+        .tabla-seccion { padding: 30px; background: white; }
+        .tabla-seccion h2 { color: #1f2937; margin-bottom: 20px; font-size: 20px; font-weight: 700; }
+        
+        .tabla-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f9fafb; color: #4b5563; font-weight: 600; padding: 14px; font-size: 13px; border-bottom: 2px solid #e5e7eb; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 14px; border-bottom: 1px solid #f3f4f6; color: #111827; font-size: 14px; }
+        tr:hover td { background-color: #f9fafb; }
+        
+        /* Badge para las distancias */
+        .badge-distancia { background: #e0f2fe; color: #0369a1; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px; display: inline-block; }
+
+        /* Responsivo: Si la pantalla es muy estrecha, se apilan verticalmente */
+        @media (max-width: 992px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+            body { padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <h1>Conectar Sedes (Tramos)</h1>
-        <p>Selecciona dos ciudades y el sistema calculará la ruta por carretera.</p>
+<div class="container">
+
+    <!-- SECCIÓN DE NOTIFICACIONES (Se mantiene arriba a lo ancho de la pantalla) -->
+    <div th:if="${param.error}" class="alerta alerta-error">
+        <span>⚠️ Error: El tramo ya existe o los datos ingresados no son válidos.</span>
+    </div>
+    <div th:if="${param.exito}" class="alerta alerta-exito">
+        <span>✅ ¡Ruta guardada y conectada con éxito!</span>
     </div>
 
-    <form th:action="@{/tramos/guardar}" th:object="${nuevoTramo}" method="post">
+    <!-- DISTRIBUCIÓN EN PARALELO (IZQUIERDA - DERECHA) -->
+    <div class="grid-layout">
+        
+        <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+        <div class="card">
+            <div class="header">
+                <h1>Conectar Sedes</h1>
+                <p>Selecciona dos ciudades para calcular la ruta.</p>
+            </div>
 
-        <label>Sede de Origen</label>
-        <select th:field="*{sedeOrigen}" id="origen" onchange="calcularDistancia()" required>
-            <option value="">Selecciona el origen...</option>
-            <option th:each="sede : ${listaSedes}" 
-                    th:value="${sede.idSede}" 
-                    th:text="${sede.nombreCiudad}"
-                    th:data-lat="${sede.latitud}"
-                    th:data-lng="${sede.longitud}"></option>
-        </select>
+            <form th:action="@{/tramos/guardar}" th:object="${nuevoTramo}" method="post">
 
-        <label>Sede de Destino</label>
-        <select th:field="*{sedeDestino}" id="destino" onchange="calcularDistancia()" required>
-            <option value="">Selecciona el destino...</option>
-            <option th:each="sede : ${listaSedes}" 
-                    th:value="${sede.idSede}" 
-                    th:text="${sede.nombreCiudad}"
-                    th:data-lat="${sede.latitud}"
-                    th:data-lng="${sede.longitud}"></option>
-        </select>
+                <label>Sede de Origen</label>
+                <select th:field="*{sedeOrigen}" id="origen" onchange="calcularDistancia()" required>
+                    <option value="">Selecciona el origen...</option>
+                    <option th:each="sede : ${listaSedes}" 
+                            th:value="${sede.idSede}" 
+                            th:text="${sede.nombreCiudad}"
+                            th:data-lat="${sede.latitud}"
+                            th:data-lng="${sede.longitud}"></option>
+                </select>
 
-        <label>Distancia Calculada (Km)</label>
-        <input type="number" step="any" th:field="*{distanciaKm}" id="distancia" readonly required placeholder="Calculando automáticamente...">
-        <div class="info-calculo" id="estado-calculo">Esperando selección de ciudades...</div>
+                <label>Sede de Destino</label>
+                <select th:field="*{sedeDestino}" id="destino" onchange="calcularDistancia()" required>
+                    <option value="">Selecciona el destino...</option>
+                    <option th:each="sede : ${listaSedes}" 
+                            th:value="${sede.idSede}" 
+                            th:text="${sede.nombreCiudad}"
+                            th:data-lat="${sede.latitud}"
+                            th:data-lng="${sede.longitud}"></option>
+                </select>
 
-        <button type="submit">Guardar Ruta en el Sistema</button>
+                <label>Distancia Calculada (Km)</label>
+                <input type="number" step="any" th:field="*{distanciaKm}" id="distancia" readonly required placeholder="Calculando automáticamente...">
+                <div class="info-calculo" id="estado-calculo">Esperando selección de ciudades...</div>
 
-    </form>
-</div>
+                <button type="submit">Guardar Ruta en el Sistema</button>
 
-<!-- Lógica de OSRM (100% Gratuito y sin API Keys) -->
+            </form>
+        </div>
+
+        <!-- COLUMNA DERECHA: HISTORIAL EN TABLA -->
+        <div class="card">
+            <div class="tabla-seccion">
+                <h2>Tramos Conectados</h2>
+                
+                <div class="tabla-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Distancia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Mensaje si no existen registros -->
+                            <tr th:if="${#lists.isEmpty(listaTramos)}">
+                                <td colspan="4" style="text-align: center; color: #9ca3af; font-style: italic; padding: 30px 0;">
+                                    No hay tramos guardados en el sistema actualmente.
+                                </td>
+                            </tr>
+                            <!-- Bucle Thymeleaf para renderizar los tramos -->
+                            <tr th:each="tramo : ${listaTramos}">
+                                <td th:text="${tramo.idTramo}" style="font-weight: 600; color: #6b7280;"></td>
+                                <td th:text="${tramo.sedeOrigen.nombreCiudad}"></td>
+                                <td th:text="${tramo.sedeDestino.nombreCiudad}"></td>
+                                <td>
+                                    <span class="badge-distancia" th:text="${tramo.distanciaKm} + ' Km'"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div> 
+
+</div> <!-- Fin .container -->
+
+<!-- Lógica de OSRM -->
 <script>
     function calcularDistancia() {
         const selectOrigen = document.getElementById('origen');
@@ -67,7 +168,6 @@
         const inputDistancia = document.getElementById('distancia');
         const estadoCalculo = document.getElementById('estado-calculo');
 
-        // Verificamos que ambas ciudades estén seleccionadas
         if (selectOrigen.value && selectDestino.value) {
             
             if (selectOrigen.value === selectDestino.value) {
@@ -83,37 +183,30 @@
             const optionOrigen = selectOrigen.options[selectOrigen.selectedIndex];
             const optionDestino = selectDestino.options[selectDestino.selectedIndex];
 
-            // Extraemos las coordenadas de los atributos de Thymeleaf
             const latOrigen = optionOrigen.getAttribute("data-lat");
             const lngOrigen = optionOrigen.getAttribute("data-lng");
             const latDestino = optionDestino.getAttribute("data-lat");
             const lngDestino = optionDestino.getAttribute("data-lng");
 
-            // Construimos la URL para la API pública de OSRM (El formato exige: longitud,latitud)
             const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngOrigen},${latOrigen};${lngDestino},${latDestino}?overview=false`;
 
-            // Ejecutamos la petición al servidor de rutas
             fetch(osrmUrl)
                 .then(response => response.json())
                 .then(data => {
                     if (data.code === 'Ok' && data.routes.length > 0) {
-                        
                         const ruta = data.routes[0];
-                        // Convertir metros a kilómetros
                         const distanciaKm = (ruta.distance / 1000).toFixed(2);
                         
-                        // Convertir segundos a horas y minutos para mostrar en pantalla
                         const horas = Math.floor(ruta.duration / 3600);
                         const minutos = Math.floor((ruta.duration % 3600) / 60);
                         let tiempoTexto = horas > 0 ? `${horas}h ${minutos}m` : `${minutos}m`;
 
-                        // Llenar el input bloqueado para el formulario
                         inputDistancia.value = distanciaKm;
                         
-                        estadoCalculo.innerText = `Ruta por carretera: ${distanciaKm} km | Tiempo: aprox. ${tiempoTexto}`;
+                        estadoCalculo.innerText = `Ruta: ${distanciaKm} km | Tiempo: aprox. ${tiempoTexto}`;
                         estadoCalculo.style.color = "#2563eb"; 
                     } else {
-                        estadoCalculo.innerText = "No se pudo trazar una ruta por carretera entre estas sedes.";
+                        estadoCalculo.innerText = "No se pudo trazar una ruta por carretera.";
                         estadoCalculo.style.color = "red";
                         inputDistancia.value = "";
                     }

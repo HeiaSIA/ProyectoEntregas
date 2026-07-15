@@ -24,30 +24,21 @@ public class TramoController {
     @Autowired
     private SedeRepository sedeRepository;
 
-    // Este método carga la página HTML y le envía los datos necesarios
     @GetMapping("/nuevo")
     public String mostrarFormularioTramo(Model model) {
-        // 1. Buscamos todas las sedes en la base de datos (Quito, Guayaquil, etc.)
+
         List<Sede> listaSedes = sedeRepository.findAll();
-        
-        // 2. Enviamos la lista de sedes al HTML para llenar los <select>
+        List<Tramo> listaTramos = tramoRepository.findAll();
         model.addAttribute("listaSedes", listaSedes);
-        
-        // 3. Enviamos un objeto Tramo vacío para que el formulario lo llene
+        model.addAttribute("listaTramos", listaTramos);
         model.addAttribute("nuevoTramo", new Tramo());
-        
-        // Retorna el nombre de tu archivo HTML (Asegúrate de que se llame "nuevo-tramo.html")
-        return "nuevo_tramo"; 
+        return "nuevo_tramo";
     }
 
-    // Este método recibe los datos del formulario cuando le das a "Guardar Ruta"
     @PostMapping("/guardar")
     public String guardarTramo(@ModelAttribute("nuevoTramo") Tramo tramo) {
-        
-        // Guardamos la arista con su peso (distancia) en PostgreSQL
+
         tramoRepository.save(tramo);
-        
-        // Redirigimos a la misma página limpia para que puedas agregar la siguiente ruta
         return "redirect:/tramos/nuevo";
     }
 }

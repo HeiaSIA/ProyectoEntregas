@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Gaming - Trazado de Rutas</title>
+    
+    <!-- Leaflet API (Mapas) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+        body { background:#f4f6f9; min-height:100vh; padding:20px; }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            height: calc(100vh - 40px);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card { background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); display: flex; flex-direction: column; }
+        .header { background:#2563eb; color:white; padding:25px; }
+        .header h1 { font-size:24px; margin-bottom:5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        form { padding:25px; display:flex; flex-direction:column; }
+        label { margin-bottom:8px; color:#374151; font-weight:600; }
+        select { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
+        select:focus { border-color:#2563eb; }
+        
+        button { background:#2563eb; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; }
+        button:hover { background:#1d4ed8; }
+        
+        .resultados { padding: 25px; border-top: 1px solid #e5e7eb; overflow-y: auto; flex-grow: 1; }
+        .ruta-nodos { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .nodo-item { background: #eff6ff; padding: 10px; border-left: 4px solid #2563eb; border-radius: 4px; font-size: 14px; font-weight: 600; }
+        .distancia-resumen { font-size: 18px; font-weight: bold; color: #10b981; margin-top: 15px; }
+        .no-ruta { color: #ef4444; font-weight: bold; font-size: 14px; }
+
+        #mapa-simulacion {
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0,0,0,.08);
+            border: 2px solid #e5e7eb;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <!-- Columna Izquierda: Controles y Resultados -->
+    <div class="card">
+        <div class="header">
+            <h1>Simular Envío</h1>
+            <p>Calcula el camino mínimo en la red.</p>
+        </div>
+
+        <form action="/simular/calcular" method="post">
+            <label>Sede Origen</label>
+            <select name="origenId" required>
+                <option value="">Selecciona origen...</option>
+                <option th:each="sede : ${listaSedes}" 
+                        th:value="${sede.idSede}" 
+                        th:text="${sede.nombreCiudad}"
+                        th:selected="${sede.idSede == origenId}"></option>
+            </select>
+
+            <label>Sede Destino</label>
+            <select name="destinoId" required>
+                <option value="">Selecciona destino...</option>
+                <option th:each="sede : ${listaSedes}" 
+                        th:value="${sede.idSede}" 
+                        th:text="${sede.nombreCiudad}"
+                        th:selected="${sede.idSede == destinoId}"></option>
+            </select>
+
+            <button type="submit">Calcular Camino Más Corto</button>
+        </form>
+
+        <!-- Bloque de Resultados -->
+        <div class="resultados" th:if="${rutaOptima != null}">
+            <h3 style="color:#1e293b; margin-bottom: 10px;">Hoja de Ruta</h3>
+            
+            <div th:if="${not #lists.isEmpty(rutaOptima)}">
+                <div class="ruta-nodos">
+                    <div class="nodo-item" th:each="sede, iter : ${rutaOptima}">
+                        <span th:text="${iter.count} + '. ' + ${sede.nombreCiudad}"></span>
+                    </div>
+                </div>
+                <div class="distancia-resumen" th:text="'Distancia total: ' + ${distanciaTotal} + ' km'"></div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(rutaOptima)}">
+                <p class="no-ruta">❌ No hay rutas o tramos creados para conectar estas dos sedes.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Derecha: El Mapa -->
+    <div id="mapa-simulacion"></div>
+
+</div>
+
+<!-- Script protegido con CDATA para evitar errores con Thymeleaf -->
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+    // Inicializar el mapa
+    const mapa = L.map('mapa-simulacion').setView([-1.8312, -78.1834], 7);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapa);
+
+    // Cargar todos los puntos de la ruta desde Thymeleaf
+    const puntosRuta = [];
+    
+    /*[# th:each="sede : ${rutaOptima}"]*/
+    puntosRuta.push({
+        nombre: /*[[${sede.nombreCiudad}]]*/ '',
+        lat: /*[[${sede.latitud}]]*/ 0,
+        lng: /*[[${sede.longitud}]]*/ 0
+    });
+    /*[/]*/
+
+    if (puntosRuta.length > 0) {
+        const coordenadas = [];
+        
+        // Dibujar los marcadores de las sedes involucradas en la ruta
+        puntosRuta.forEach((punto, index) => {
+            coordenadas.push([punto.lat, punto.lng]);
+            
+            let colorIcono = 'blue';
+            if(index === 0) colorIcono = 'green'; // Origen verde
+            if(index === puntosRuta.length - 1) colorIcono = 'red'; // Destino rojo
+
+            // Crear marcador simple
+            L.marker([punto.lat, punto.lng])
+                .addTo(mapa)
+                .bindPopup(`<b>Paso ${index + 1}:</b> ${punto.nombre}`)
+                .openPopup();
+        });
+
+        // Trazar visualmente el camino óptimo uniendo los puntos (Criterio 5 de la Rúbrica)
+        const polyline = L.polyline(coordenadas, {
+            color: '#2563eb', // Línea azul de ruta
+            weight: 5,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(mapa);
+
+        // Centrar y enfocar automáticamente el mapa sobre la ruta calculada
+        mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+    }
+
+/*]]>*/
+</script>
+
+</body>
+</html>

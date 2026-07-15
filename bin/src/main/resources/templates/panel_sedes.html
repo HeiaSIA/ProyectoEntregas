@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Gaming - Gestión de Sedes</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+        }
+
+        body{
+            background:#f4f6f9;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:40px;
+        }
+
+        .card{
+            width:100%;
+            max-width:1100px;
+            background:white;
+            border-radius:18px;
+            overflow:hidden;
+            box-shadow:0 15px 40px rgba(0,0,0,.08);
+        }
+
+        .header{
+            background:#2563eb;
+            color:white;
+            padding:30px;
+        }
+
+        .header h1{
+            font-size:32px;
+            margin-bottom:8px;
+        }
+
+        .header p{
+            opacity:.9;
+            font-size:15px;
+        }
+
+        form{
+            padding:35px;
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns:350px 1fr;
+            gap:35px;
+        }
+
+        .left{
+            display:flex;
+            flex-direction:column;
+        }
+
+        label{
+            margin-bottom:8px;
+            color:#374151;
+            font-weight:600;
+        }
+
+        input{
+            padding:14px;
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            margin-bottom:20px;
+            font-size:15px;
+            transition:.3s;
+            outline:none;
+        }
+
+        input:focus{
+            border-color:#2563eb;
+            box-shadow:0 0 0 4px rgba(37,99,235,.15);
+        }
+
+        input[readonly]{
+            background:#f3f4f6;
+        }
+
+        #mapa{
+            width:100%;
+            height:520px;
+            border-radius:15px;
+            overflow:hidden;
+            border:1px solid #d1d5db;
+        }
+
+        .footer{
+            margin-top:30px;
+            text-align:right;
+        }
+
+        button{
+            background:#2563eb;
+            color:white;
+            border:none;
+            padding:15px 40px;
+            border-radius:10px;
+            font-size:16px;
+            font-weight:600;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        button:hover{
+            background:#1d4ed8;
+            transform:translateY(-2px);
+        }
+
+        @media(max-width:900px){
+
+            .grid{
+                grid-template-columns:1fr;
+            }
+
+            #mapa{
+                height:400px;
+            }
+
+            .footer{
+                text-align:center;
+            }
+
+            button{
+                width:100%;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="header">
+        <h1>Registrar Nueva Sede</h1>
+        <p>Selecciona la ubicación de la sucursal en el mapa y guarda la información.</p>
+    </div>
+
+    <form th:action="@{/sedes/guardar}" th:object="${nuevaSede}" method="post">
+
+        <div class="grid">
+
+            <div class="left">
+
+                <label>Ciudad</label>
+
+                <input
+                        type="text"
+                        th:field="*{nombreCiudad}"
+                        placeholder="Ej. Quito"
+                        required>
+
+                <label>Latitud</label>
+
+                <input
+                        type="number"
+                        step="any"
+                        th:field="*{latitud}"
+                        id="latitud"
+                        readonly
+                        required>
+
+                <label>Longitud</label>
+
+                <input
+                        type="number"
+                        step="any"
+                        th:field="*{longitud}"
+                        id="longitud"
+                        readonly
+                        required>
+
+                <p style="color:#6b7280;font-size:14px;line-height:1.6;">
+                    Arrastra el marcador para seleccionar la ubicación exacta de la sede.
+                </p>
+
+            </div>
+
+            <div>
+
+                <div id="mapa"></div>
+
+            </div>
+
+        </div>
+
+        <div class="footer">
+
+            <button type="submit">
+                Guardar Sede
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+
+let map;
+let marcador;
+
+const coordenada_central = {
+    lat:-0.9178982734136378,
+    lng:-78.6329809324952
+};
+
+function initMap(){
+
+    map = new google.maps.Map(document.getElementById("mapa"),{
+
+        zoom:12,
+        center:coordenada_central,
+
+        styles:[
+            {
+                featureType:"poi",
+                stylers:[{visibility:"off"}]
+            },
+            {
+                featureType:"transit",
+                stylers:[{visibility:"off"}]
+            }
+        ]
+
+    });
+
+    marcador = new google.maps.Marker({
+
+        position:coordenada_central,
+        map:map,
+        draggable:true,
+        animation:google.maps.Animation.DROP
+
+    });
+
+    document.getElementById("latitud").value=coordenada_central.lat;
+    document.getElementById("longitud").value=coordenada_central.lng;
+
+    marcador.addListener("dragend",function(event){
+
+        document.getElementById("latitud").value=event.latLng.lat();
+        document.getElementById("longitud").value=event.latLng.lng();
+
+    });
+
+}
+
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAT191SwT7Bc1S6vAsbmmF_km9SFEzwT64&libraries=places&callback=initMap">
+</script>
+
+</body>
+
+</html>
