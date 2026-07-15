@@ -19,7 +19,9 @@
             height: 100vh;
         }
         h1 { text-shadow: 0 0 10px var(--electric-blue); }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+        
+        /* Modificado a 3 columnas para que entren las 3 opciones */
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; max-width: 1000px; }
         
         .card {
             background: rgba(255, 255, 255, 0.05);
@@ -36,7 +38,12 @@
             box-shadow: 0 0 30px var(--neon-purple);
             transform: scale(1.05);
         }
-        .card h2 { margin: 0; color: var(--electric-blue); }
+        .card h2 { margin: 0 0 10px 0; color: var(--electric-blue); font-size: 22px; }
+        .card p { margin: 0; color: #cbd5e1; font-size: 14px; }
+        
+        @media(max-width: 900px) {
+            .menu-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -50,8 +57,14 @@
         </a>
         
         <a href="/sedes" class="card">
-            <h2>Administrar Sedes</h2>
-            <p>Gestionar ubicaciones y mapas</p>
+            <h2>Administrar Sedes (Nodos)</h2>
+            <p>Gestionar ubicaciones en el mapa</p>
+        </a>
+
+        <!-- ¡Nueva tarjeta agregada para conectar rutas! -->
+        <a href="/tramos/nuevo" class="card">
+            <h2>Conectar Rutas (Aristas)</h2>
+            <p>Enlazar sedes y medir distancias</p>
         </a>
     </div>
 

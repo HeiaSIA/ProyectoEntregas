@@ -19,16 +19,23 @@ public class Producto {
     @Column(nullable = false)
     private Double precioBase;
 
-    // Constructor vacío (Obligatorio para Spring Boot)
-    public Producto() {}
+    @Column(nullable = false)
+    private String imagen; // Ej: laptop_asus.jpg
 
-    public Producto(String nombre, String descripcion, Double precioBase) {
+    // Constructor vacío (Obligatorio para Spring Boot)
+    public Producto() {
+    }
+
+    // Constructor con parámetros
+    public Producto(String nombre, String descripcion, Double precioBase, String imagen) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precioBase = precioBase;
+        this.imagen = imagen;
     }
 
     // Getters y Setters
+
     public Long getIdProducto() {
         return idProducto;
     }
@@ -60,4 +67,13 @@ public class Producto {
     public void setPrecioBase(Double precioBase) {
         this.precioBase = precioBase;
     }
+
+    public String getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(String imagen) {
+        this.imagen = imagen;
+    }
+
 }
