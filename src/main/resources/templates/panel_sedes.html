@@ -1,271 +1,362 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <title>Nexus Gaming - Gestión de Sedes</title>
 
     <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+        body { background:#f4f6f9; min-height:100vh; display:flex; justify-content:center; align-items:center; padding:40px; }
+        
+        .container { width:100%; max-width:1300px; display:flex; flex-direction:column; gap:20px; }
+        
+        /* Grid unificado de dos columnas */
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 1fr 1.2fr; 
+            gap: 30px; 
+            align-items: start; 
         }
+        
+        .card { width:100%; background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); }
+        .header { background:#2563eb; color:white; padding:25px 30px; }
+        .header h1 { font-size:24px; margin-bottom:6px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        form { padding:30px; display:flex; flex-direction:column; }
+        label { margin-bottom:8px; color:#374151; font-weight:600; font-size: 14px; }
+        input { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; transition: .2s; }
+        input:focus { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.15); }
+        input[readonly] { background: #e5e7eb; color: #4b5563; font-weight: bold; cursor: not-allowed; }
+        
+        button[type="submit"] { background:#2563eb; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:.3s; margin-top: 5px; }
+        button[type="submit"]:hover { background:#1d4ed8; transform:translateY(-2px); }
+        
+        #mapa { width:100%; height:300px; border-radius:12px; overflow:hidden; border:1px solid #d1d5db; margin-bottom: 15px; }
+        
+        /* Estilos de la tabla de sedes */
+        .tabla-seccion { padding: 30px; background: white; }
+        .tabla-seccion h2 { color: #1f2937; margin-bottom: 20px; font-size: 20px; font-weight: 700; }
+        
+        .tabla-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f9fafb; color: #4b5563; font-weight: 600; padding: 14px; font-size: 13px; border-bottom: 2px solid #e5e7eb; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 14px; border-bottom: 1px solid #f3f4f6; color: #111827; font-size: 14px; }
+        tr:hover td { background-color: #f9fafb; }
+        
+        .badge-coord { background: #eff6ff; color: #1e40af; padding: 4px 8px; border-radius: 6px; font-family: monospace; font-size: 12px; font-weight: 600; }
 
-        body{
-            background:#f4f6f9;
-            min-height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:40px;
+        /* Estilos de Botones de Acciones */
+        .btn-accion { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; }
+        .btn-editar { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; margin-right: 5px; }
+        .btn-editar:hover { background: #fde68a; }
+        .btn-eliminar { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .btn-eliminar:hover { background: #fca5a5; }
+
+        /* ==================== TOASTS ALERTAS FLOTANTES ==================== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 420px;
+            width: 90%;
         }
-
-        .card{
-            width:100%;
-            max-width:1100px;
-            background:white;
-            border-radius:18px;
-            overflow:hidden;
-            box-shadow:0 15px 40px rgba(0,0,0,.08);
+        .alerta {
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            animation: slideIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.5s ease 4s forwards;
         }
-
-        .header{
-            background:#2563eb;
-            color:white;
-            padding:30px;
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-
-        .header h1{
-            font-size:32px;
-            margin-bottom:8px;
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-15px); visibility: hidden; }
         }
+        .alerta-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alerta-exito { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
 
-        .header p{
-            opacity:.9;
-            font-size:15px;
+        /* ==================== ESTILOS DEL MODAL (VENTANA FLOTANTE) ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
         }
-
-        form{
-            padding:35px;
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: white;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: popIn 0.3s ease;
         }
-
-        .grid{
-            display:grid;
-            grid-template-columns:350px 1fr;
-            gap:35px;
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-
-        .left{
-            display:flex;
-            flex-direction:column;
+        .modal-header {
+            background: #2563eb;
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        label{
-            margin-bottom:8px;
-            color:#374151;
-            font-weight:600;
+        .modal-header h2 { font-size: 20px; font-weight: 700; }
+        .btn-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: 0.2s;
+            line-height: 1;
         }
+        .btn-close:hover { opacity: 1; }
+        .modal-body { padding: 25px; }
+        .modal-body form { padding: 0; }
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-btn-group button { flex: 1; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-modal-guardar { background: #2563eb; color: white; }
+        .btn-modal-guardar:hover { background: #1d4ed8; }
+        .btn-modal-cancelar { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+        .btn-modal-cancelar:hover { background: #e5e7eb; }
 
-        input{
-            padding:14px;
-            border:1px solid #d1d5db;
-            border-radius:10px;
-            margin-bottom:20px;
-            font-size:15px;
-            transition:.3s;
-            outline:none;
-        }
-
-        input:focus{
-            border-color:#2563eb;
-            box-shadow:0 0 0 4px rgba(37,99,235,.15);
-        }
-
-        input[readonly]{
-            background:#f3f4f6;
-        }
-
-        #mapa{
-            width:100%;
-            height:520px;
-            border-radius:15px;
-            overflow:hidden;
-            border:1px solid #d1d5db;
-        }
-
-        .footer{
-            margin-top:30px;
-            text-align:right;
-        }
-
-        button{
-            background:#2563eb;
-            color:white;
-            border:none;
-            padding:15px 40px;
-            border-radius:10px;
-            font-size:16px;
-            font-weight:600;
-            cursor:pointer;
-            transition:.3s;
-        }
-
-        button:hover{
-            background:#1d4ed8;
-            transform:translateY(-2px);
-        }
-
-        @media(max-width:900px){
-
-            .grid{
-                grid-template-columns:1fr;
-            }
-
-            #mapa{
-                height:400px;
-            }
-
-            .footer{
-                text-align:center;
-            }
-
-            button{
-                width:100%;
-            }
-
+        @media (max-width: 992px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            body { padding: 20px; }
         }
     </style>
-
 </head>
-
 <body>
 
-<div class="card">
-
-    <div class="header">
-        <h1>Registrar Nueva Sede</h1>
-        <p>Selecciona la ubicación de la sucursal en el mapa y guarda la información.</p>
+<!-- Alertas Toasts Flotantes -->
+<div class="toast-container">
+    <div th:if="${mensajeError}" class="alerta alerta-error">
+        <span th:text="'⚠️ ' + ${mensajeError}"></span>
     </div>
+    <div th:if="${mensajeExito}" class="alerta alerta-exito">
+        <span th:text="'✅ ' + ${mensajeExito}"></span>
+    </div>
+</div>
 
-    <form th:action="@{/sedes/guardar}" th:object="${nuevaSede}" method="post">
-
-        <div class="grid">
-
-            <div class="left">
-
-                <label>Ciudad</label>
-
-                <input
-                        type="text"
-                        th:field="*{nombreCiudad}"
-                        placeholder="Ej. Quito"
-                        required>
-
-                <label>Latitud</label>
-
-                <input
-                        type="number"
-                        step="any"
-                        th:field="*{latitud}"
-                        id="latitud"
-                        readonly
-                        required>
-
-                <label>Longitud</label>
-
-                <input
-                        type="number"
-                        step="any"
-                        th:field="*{longitud}"
-                        id="longitud"
-                        readonly
-                        required>
-
-                <p style="color:#6b7280;font-size:14px;line-height:1.6;">
-                    Arrastra el marcador para seleccionar la ubicación exacta de la sede.
-                </p>
-
+<div class="container">
+    <div class="grid-layout">
+        
+        <!-- Formulario de Registro (Izquierda) -->
+        <div class="card">
+            <div class="header">
+                <h1>Registrar Sede</h1>
+                <p>Selecciona la ubicación en el mapa e ingresa la información.</p>
             </div>
 
-            <div>
+            <form th:action="@{/sedes/guardar}" th:object="${nuevaSede}" method="post">
+                <label>Ciudad</label>
+                <input type="text" th:field="*{nombreCiudad}" placeholder="Ej. Quito" required>
+
+                <label>Latitud</label>
+                <input type="number" step="any" th:field="*{latitud}" id="latitud" readonly required>
+
+                <label>Longitud</label>
+                <input type="number" step="any" th:field="*{longitud}" id="longitud" readonly required>
 
                 <div id="mapa"></div>
 
+                <p style="color:#6b7280; font-size:13px; line-height:1.5; font-style: italic; margin-bottom: 15px;">
+                    Arrastra el marcador rojo para cambiar las coordenadas geográficas de la sede.
+                </p>
+
+                <button type="submit">Guardar Sede en el Sistema</button>
+            </form>
+        </div>
+
+        <!-- Historial en Tabla (Derecha) -->
+        <div class="card">
+            <div class="tabla-seccion">
+                <h2>Sedes Registradas</h2>
+                <div class="tabla-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ciudad</th>
+                                <th>Coordenadas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(listaSedes)}">
+                                <td colspan="4" style="text-align: center; color: #9ca3af; font-style: italic; padding: 30px 0;">
+                                    No hay sedes registradas en el sistema actualmente.
+                                </td>
+                            </tr>
+                            <tr th:each="sede : ${listaSedes}">
+                                <td th:text="${sede.idSede}" style="font-weight: 600; color: #6b7280;"></td>
+                                <td th:text="${sede.nombreCiudad}" style="font-weight: 600;"></td>
+                                <td>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <span class="badge-coord" th:text="'Lat: ' + ${sede.latitud}"></span>
+                                        <span class="badge-coord" th:text="'Lng: ' + ${sede.longitud}"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn-accion btn-editar" th:onclick="'abrirModalEditarSede(' + ${sede.idSede} + ')'">
+                                        Editar
+                                    </button>
+                                    <a th:href="@{/sedes/eliminar/{id}(id=${sede.idSede})}" 
+                                       class="btn-accion btn-eliminar"
+                                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta sede?');">
+                                        Eliminar
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
         </div>
 
-        <div class="footer">
+    </div>
+</div>
 
-            <button type="submit">
-                Guardar Sede
-            </button>
-
+<!-- ==================== CONTENEDOR DEL MODAL "EL CUADRADO" ==================== -->
+<div id="modalEditar" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Editar Sede</h2>
+            <button type="button" class="btn-close" onclick="cerrarModal()">&times;</button>
         </div>
-
-    </form>
-
+        <div class="modal-body" id="modalBodyContainer">
+            <!-- Se inyectará el fragmento editar_sede.html aquí... -->
+        </div>
+    </div>
 </div>
 
 <script>
+    // --- LÓGICA DE GOOGLE MAPS (CREACIÓN) ---
+    let map;
+    let marcador;
+    const coordenada_central = {
+        lat: -0.9178982734136378,
+        lng: -78.6329809324952
+    };
 
-let map;
-let marcador;
+    function initMap() {
+        map = new google.maps.Map(document.getElementById("mapa"), {
+            zoom: 12,
+            center: coordenada_central,
+            styles: [
+                { featureType: "poi", stylers: [{ visibility: "off" }] },
+                { featureType: "transit", stylers: [{ visibility: "off" }] }
+            ]
+        });
 
-const coordenada_central = {
-    lat:-0.9178982734136378,
-    lng:-78.6329809324952
-};
+        marcador = new google.maps.Marker({
+            position: coordenada_central,
+            map: map,
+            draggable: true,
+            animation: google.maps.Animation.DROP
+        });
 
-function initMap(){
+        document.getElementById("latitud").value = coordenada_central.lat;
+        document.getElementById("longitud").value = coordenada_central.lng;
 
-    map = new google.maps.Map(document.getElementById("mapa"),{
+        marcador.addListener("dragend", function(event) {
+            document.getElementById("latitud").value = event.latLng.lat();
+            document.getElementById("longitud").value = event.latLng.lng();
+        });
+    }
 
-        zoom:12,
-        center:coordenada_central,
+    // --- LÓGICA GOOGLE MAPS (EDICIÓN EN MODAL) ---
+    function initMapEditar(lat, lng) {
+        const coordenada_edicion = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        const mapaEdit = new google.maps.Map(document.getElementById("mapa-edit"), {
+            zoom: 13,
+            center: coordenada_edicion,
+            styles: [
+                { featureType: "poi", stylers: [{ visibility: "off" }] },
+                { featureType: "transit", stylers: [{ visibility: "off" }] }
+            ]
+        });
 
-        styles:[
-            {
-                featureType:"poi",
-                stylers:[{visibility:"off"}]
-            },
-            {
-                featureType:"transit",
-                stylers:[{visibility:"off"}]
-            }
-        ]
+        const marcadorEdit = new google.maps.Marker({
+            position: coordenada_edicion,
+            map: mapaEdit,
+            draggable: true,
+            animation: google.maps.Animation.DROP
+        });
 
-    });
+        marcadorEdit.addListener("dragend", function(event) {
+            document.getElementById("editLatitud").value = event.latLng.lat();
+            document.getElementById("editLongitud").value = event.latLng.lng();
+        });
+    }
 
-    marcador = new google.maps.Marker({
+    // --- MANEJO DEL MODAL DINÁMICO POR THYMELEAF FRAGMENT ---
+    function abrirModalEditarSede(id) {
+        const modal = document.getElementById('modalEditar');
+        const modalBody = document.getElementById('modalBodyContainer');
 
-        position:coordenada_central,
-        map:map,
-        draggable:true,
-        animation:google.maps.Animation.DROP
+        modalBody.innerHTML = "<p style='text-align: center; color: #6b7280;'>Cargando mapa e información de la sede...</p>";
+        modal.classList.add('active');
 
-    });
+        // Consumir el Fragmento del controlador
+        fetch(`/sedes/editar/${id}`)
+            .then(response => {
+                if(!response.ok) throw new Error("No se pudo obtener la plantilla de edición");
+                return response.text();
+            })
+            .then(htmlFragment => {
+                modalBody.innerHTML = htmlFragment;
 
-    document.getElementById("latitud").value=coordenada_central.lat;
-    document.getElementById("longitud").value=coordenada_central.lng;
+                // Extraemos latitud y longitud cargados en el formulario para iniciar el mapa del modal
+                const editLat = document.getElementById("editLatitud").value;
+                const editLng = document.getElementById("editLongitud").value;
 
-    marcador.addListener("dragend",function(event){
+                // Inicializamos el mapa en el modal con sus respectivas coordenadas
+                initMapEditar(editLat, editLng);
+            })
+            .catch(error => {
+                modalBody.innerHTML = "<p style='color:red; text-align:center;'>Error al cargar el fragmento de la sede.</p>";
+                console.error(error);
+            });
+    }
 
-        document.getElementById("latitud").value=event.latLng.lat();
-        document.getElementById("longitud").value=event.latLng.lng();
+    function cerrarModal() {
+        document.getElementById('modalEditar').classList.remove('active');
+    }
 
-    });
-
-}
-
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalEditar');
+        if (event.target === modal) {
+            cerrarModal();
+        }
+    }
 </script>
 
 <script async defer
-src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAT191SwT7Bc1S6vAsbmmF_km9SFEzwT64&libraries=places&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAT191SwT7Bc1S6vAsbmmF_km9SFEzwT64&libraries=places&callback=initMap">
 </script>
 
 </body>
-
 </html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragmento de Edición</title>
+</head>
+<body>
+
+    <!-- Este bloque se extraerá entero y se meterá dentro del modal de nuevo_tramo.html -->
+    <div th:fragment="formEditar" id="formEditarContainer">
+        
+        <form th:action="@{/tramos/actualizar}" th:object="${tramo}" method="post">
+            
+            <!-- Campo oculto para asegurar que Spring Boot sepa qué ID actualizar -->
+            <input type="hidden" th:field="*{idTramo}">
+
+            <label>Sede de Origen</label>
+            <select th:field="*{sedeOrigen}" id="editOrigen" onchange="calcularDistanciaEdit()" required>
+                <option th:each="sede : ${listaSedes}" 
+                        th:value="${sede.idSede}" 
+                        th:text="${sede.nombreCiudad}"
+                        th:data-lat="${sede.latitud}"
+                        th:data-lng="${sede.longitud}"></option>
+            </select>
+
+            <label>Sede de Destino</label>
+            <select th:field="*{sedeDestino}" id="editDestino" onchange="calcularDistanciaEdit()" required>
+                <option th:each="sede : ${listaSedes}" 
+                        th:value="${sede.idSede}" 
+                        th:text="${sede.nombreCiudad}"
+                        th:data-lat="${sede.latitud}"
+                        th:data-lng="${sede.longitud}"></option>
+            </select>
+
+            <label>Distancia Calculada (Km)</label>
+            <input type="number" step="any" th:field="*{distanciaKm}" id="editDistancia" readonly required>
+            <div class="info-calculo" id="edit-estado-calculo" style="color: #2563eb;">Calculando coordenadas...</div>
+
+            <div class="modal-btn-group">
+                <button type="button" class="btn-modal-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn-modal-guardar">Guardar Cambios</button>
+            </div>
+        </form>
+
+        <!-- Script interno que auto-recalcula la distancia del tramo cargado -->
+        <script>
+            calcularDistanciaEdit();
+        </script>
+    </div>
+
+</body>
+</html>

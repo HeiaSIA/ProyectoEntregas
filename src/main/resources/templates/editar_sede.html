@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fragmento de Edición de Sede</title>
+</head>
+<body>
+
+    <!-- Fragmento extraído dinámicamente -->
+    <div th:fragment="formEditarSede" id="formEditarSedeContainer">
+        
+        <form th:action="@{/sedes/actualizar}" th:object="${sede}" method="post">
+            
+            <!-- ID oculto para la actualización segura en Spring Boot -->
+            <input type="hidden" th:field="*{idSede}" id="editIdSede">
+
+            <label>Ciudad / Nombre de Sede</label>
+            <input type="text" th:field="*{nombreCiudad}" placeholder="Ej. Guayaquil" required>
+
+            <label>Latitud</label>
+            <input type="number" step="any" th:field="*{latitud}" id="editLatitud" readonly required>
+
+            <label>Longitud</label>
+            <input type="number" step="any" th:field="*{longitud}" id="editLongitud" readonly required>
+
+            <p style="color:#2563eb; font-size:13px; margin-bottom:12px; font-weight: 500;">
+                📍 Arrastra el marcador azul del mapa flotante para ajustar su ubicación geográfica.
+            </p>
+
+            <!-- Contenedor del Mapa de Edición de Google Maps -->
+            <div id="mapa-edit" style="width: 100%; height: 260px; border-radius: 12px; border: 1px solid #d1d5db; margin-bottom: 20px;"></div>
+
+            <div class="modal-btn-group">
+                <button type="button" class="btn-modal-cancelar" onclick="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn-modal-guardar">Guardar Cambios</button>
+            </div>
+        </form>
+
+    </div>
+
+</body>
+</html>
