@@ -26,31 +26,31 @@ public class EncomiendaController {
     @Autowired
     private DijkstraService dijkstraService;
 
-    // Carga inicial del formulario de simulación
     @GetMapping("/simular")
     public String verSimulacion(Model model) {
         model.addAttribute("listaSedes", sedeRepository.findAll());
         return "simular_ruta";
     }
 
-    // Procesa y calcula Dijkstra
     @PostMapping("/simular/calcular")
     public String calcularRuta(
             @RequestParam("origenId") Long origenId,
-            @RequestParam("destinoId") Long destinoId,
+            @RequestParam("destinosId") List<Long> destinosId,
             Model model) {
 
         List<Sede> todasSedes = sedeRepository.findAll();
-        ResultadoRuta resultado = dijkstraService.calcularRutaOptima(
+        
+        // Llamada a la nueva lógica de enrutamiento múltiple
+        ResultadoRuta resultado = dijkstraService.calcularRutaMultiplesDestinos(
                 todasSedes,
                 tramoRepository.findAll(),
                 origenId,
-                destinoId
+                destinosId
         );
 
         model.addAttribute("listaSedes", todasSedes);
         model.addAttribute("origenId", origenId);
-        model.addAttribute("destinoId", destinoId);
+        model.addAttribute("destinosId", destinosId);
         model.addAttribute("rutaOptima", resultado.rutaSedes);
         model.addAttribute("distanciaTotal", resultado.distanciaTotalKm);
 

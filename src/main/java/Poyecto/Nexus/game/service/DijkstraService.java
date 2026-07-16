@@ -15,7 +15,7 @@ public class DijkstraService {
         public String nombreCiudad;
         public double distanciaMinima = Double.MAX_VALUE;
         public Nodo nodoPrevio;
-        public List<Arista> adyacentes = new ArrayList<>(); // Lista de adyacencia dinámica
+        public List<Arista> adyacentes = new ArrayList<>();
 
         public Nodo(Long idSede, String nombreCiudad) {
             this.idSede = idSede;
@@ -46,25 +46,25 @@ public class DijkstraService {
 
         public ResultadoRuta(List<Sede> rutaSedes, double distanciaTotalKm) {
             this.rutaSedes = rutaSedes;
-            this.distanciaTotalKm = Math.round(distanciaTotalKm * 100.0) / 100.0; // Redondear a 2 decimales
+            this.distanciaTotalKm = Math.round(distanciaTotalKm * 100.0) / 100.0;
         }
     }
 
+    // Método 1: Dijkstra Nativo (Criterio 4 de la rúbrica)
     public ResultadoRuta calcularRutaOptima(List<Sede> sedesDb, List<Tramo> tramosDb, Long idOrigen, Long idDestino) {
         Map<Long, Nodo> mapaNodos = new HashMap<>();
         
-        // 1. Inicializar nodos
         for (Sede s : sedesDb) {
             mapaNodos.put(s.getIdSede(), new Nodo(s.getIdSede(), s.getNombreCiudad()));
         }
 
-        // 2. Construir lista de adyacencia leyendo las conexiones existentes
         for (Tramo t : tramosDb) {
             Nodo origen = mapaNodos.get(t.getSedeOrigen().getIdSede());
             Nodo destino = mapaNodos.get(t.getSedeDestino().getIdSede());
             if (origen != null && destino != null) {
-                // El grafo es dirigido por defecto, si fuera bidireccional agregas la inversa también.
                 origen.adyacentes.add(new Arista(destino, t.getDistanciaKm()));
+                destino.adyacentes.add(new Arista(origen, t.getDistanciaKm()));
+                
             }
         }
 
@@ -75,7 +75,6 @@ public class DijkstraService {
             return new ResultadoRuta(new ArrayList<>(), 0.0);
         }
 
-        // 3. Ejecutar algoritmo de Dijkstra nativo (Criterio 4)
         nodoInicio.distanciaMinima = 0.0;
         PriorityQueue<Nodo> cola = new PriorityQueue<>();
         cola.add(nodoInicio);
@@ -97,16 +96,13 @@ public class DijkstraService {
             }
         }
         
-        
-     // 4. Reconstruir el camino óptimo
         List<Sede> rutaSedes = new ArrayList<>();
         for (Nodo n = nodoFin; n != null; n = n.nodoPrevio) {
             Sede sedeDb = null;
-            // Buscamos la sede correspondiente en la lista de la base de datos
             for (Sede s : sedesDb) {
                 if (s.getIdSede().equals(n.idSede)) {
                     sedeDb = s;
-                    break; // Ya la encontramos, salimos del ciclo interno
+                    break;
                 }
             }
             if (sedeDb != null) {
@@ -115,11 +111,62 @@ public class DijkstraService {
         }
         Collections.reverse(rutaSedes);
 
-        // Si no hay camino viable
         if (nodoFin.distanciaMinima == Double.MAX_VALUE) {
             return new ResultadoRuta(new ArrayList<>(), 0.0);
         }
 
         return new ResultadoRuta(rutaSedes, nodoFin.distanciaMinima);
+    }
+
+    // Método 2: Resolución de Múltiples Destinos (Algoritmo Voraz basado en Dijkstra)
+    public ResultadoRuta calcularRutaMultiplesDestinos(List<Sede> sedesDb, List<Tramo> tramosDb, Long idOrigen, List<Long> idsDestinos) {
+        List<Sede> rutaFinal = new ArrayList<>();
+        double distanciaTotal = 0.0;
+
+        Long actual = idOrigen;
+        List<Long> pendientes = new ArrayList<>(idsDestinos);
+
+        Sede sedeOrigen = sedesDb.stream()
+                .filter(s -> s.getIdSede().equals(idOrigen))
+                .findFirst()
+                .orElse(null);
+
+        if (sedeOrigen != null) {
+            rutaFinal.add(sedeOrigen);
+        }
+
+        while (!pendientes.isEmpty()) {
+            Long masCercano = null;
+            ResultadoRuta mejorTramo = null;
+            double minDistancia = Double.MAX_VALUE;
+
+            for (Long destinoId : pendientes) {
+                ResultadoRuta tramoCandidato = calcularRutaOptima(sedesDb, tramosDb, actual, destinoId);
+                
+                if (tramoCandidato != null && !tramoCandidato.rutaSedes.isEmpty() && tramoCandidato.distanciaTotalKm < minDistancia) {
+                    minDistancia = tramoCandidato.distanciaTotalKm;
+                    mejorTramo = tramoCandidato;
+                    masCercano = destinoId;
+                }
+            }
+
+            if (masCercano == null) {
+                break; // No hay ruta a los destinos restantes
+            }
+
+            List<Sede> subRuta = mejorTramo.rutaSedes;
+            
+            if (!rutaFinal.isEmpty() && !subRuta.isEmpty()) {
+                subRuta.remove(0); // Evitar duplicar el nodo de conexión
+            }
+            
+            rutaFinal.addAll(subRuta);
+            distanciaTotal += mejorTramo.distanciaTotalKm;
+
+            actual = masCercano;
+            pendientes.remove(masCercano);
+        }
+
+        return new ResultadoRuta(rutaFinal, distanciaTotal);
     }
 }

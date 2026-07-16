@@ -31,6 +31,56 @@
         select { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
         select:focus { border-color:#2563eb; }
         
+        /* Contenedor de Píldoras Interactivas */
+        .destinos-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .destino-pill {
+            background: white;
+            border: 1px solid #d1d5db;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .destino-pill:hover:not(.disabled) {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #f0f6ff;
+        }
+
+        .destino-pill.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .destino-pill.disabled {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         button { background:#2563eb; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; }
         button:hover { background:#1d4ed8; }
         
@@ -54,16 +104,15 @@
 
 <div class="dashboard-container">
     
-    <!-- Columna Izquierda: Controles y Resultados -->
     <div class="card">
         <div class="header">
             <h1>Simular Envío</h1>
-            <p>Calcula el camino mínimo en la red.</p>
+            <p>Calcula la ruta óptima de entregas.</p>
         </div>
 
-        <form action="/simular/calcular" method="post">
+        <form action="/simular/calcular" method="post" onsubmit="return validarFormulario();">
             <label>Sede Origen</label>
-            <select name="origenId" required>
+            <select name="origenId" id="origenSelect" required>
                 <option value="">Selecciona origen...</option>
                 <option th:each="sede : ${listaSedes}" 
                         th:value="${sede.idSede}" 
@@ -71,21 +120,31 @@
                         th:selected="${sede.idSede == origenId}"></option>
             </select>
 
-            <label>Sede Destino</label>
-            <select name="destinoId" required>
-                <option value="">Selecciona destino...</option>
+            <label>Sedes de Destino (Toca para agregar)</label>
+            
+            <!-- Selector múltiple oculto pero enlazado con Thymeleaf/Spring -->
+            <select id="destinosSelectHidden" name="destinosId" multiple style="display: none;" required>
                 <option th:each="sede : ${listaSedes}" 
                         th:value="${sede.idSede}" 
-                        th:text="${sede.nombreCiudad}"
-                        th:selected="${sede.idSede == destinoId}"></option>
+                        th:text="${sede.nombreCiudad}"></option>
             </select>
 
-            <button type="submit">Calcular Camino Más Corto</button>
+            <!-- Interfaz visual moderna para seleccionar ciudades con un clic -->
+            <div class="destinos-grid">
+                <div th:each="sede : ${listaSedes}" 
+                     th:data-id="${sede.idSede}"
+                     class="destino-pill"
+                     onclick="toggleDestino(this)">
+                    <span class="icon">+</span>
+                    <span th:text="${sede.nombreCiudad}"></span>
+                </div>
+            </div>
+
+            <button type="submit">Calcular Ruta de Entregas</button>
         </form>
 
-        <!-- Bloque de Resultados -->
         <div class="resultados" th:if="${rutaOptima != null}">
-            <h3 style="color:#1e293b; margin-bottom: 10px;">Hoja de Ruta</h3>
+            <h3 style="color:#1e293b; margin-bottom: 10px;">Hoja de Ruta (Orden de Visita)</h3>
             
             <div th:if="${not #lists.isEmpty(rutaOptima)}">
                 <div class="ruta-nodos">
@@ -97,21 +156,95 @@
             </div>
 
             <div th:if="${#lists.isEmpty(rutaOptima)}">
-                <p class="no-ruta">❌ No hay rutas o tramos creados para conectar estas dos sedes.</p>
+                <p class="no-ruta">❌ No fue posible conectar todos los puntos con los tramos actuales.</p>
             </div>
         </div>
     </div>
 
-    <!-- Columna Derecha: El Mapa -->
     <div id="mapa-simulacion"></div>
-
 </div>
 
-<!-- Script protegido con CDATA para evitar errores con Thymeleaf -->
 <script th:inline="javascript">
 /*<![CDATA[*/
 
-    // 1. Cargar todos los puntos desde TU BASE DE DATOS a través de Thymeleaf
+    // ELEMENTOS DEL DOM PARA LAS PÍLDORAS
+    const origenSelect = document.getElementById('origenSelect');
+    const hiddenSelect = document.getElementById('destinosSelectHidden');
+    const pills = document.querySelectorAll('.destino-pill');
+
+    // Función para añadir/remover sedes de entrega al hacer un simple clic
+    function toggleDestino(pill) {
+        if (pill.classList.contains('disabled')) return;
+
+        const id = pill.getAttribute('data-id');
+        const option = hiddenSelect.querySelector(`option[value="${id}"]`);
+        
+        if (pill.classList.contains('active')) {
+            // Deseleccionar sede
+            pill.classList.remove('active');
+            pill.querySelector('.icon').textContent = '+';
+            if (option) option.selected = false;
+        } else {
+            // Seleccionar sede
+            pill.classList.add('active');
+            pill.querySelector('.icon').textContent = '✓';
+            if (option) option.selected = true;
+        }
+    }
+
+    // Evita que la ciudad de origen sea elegible como destino
+    function actualizarRestricciones() {
+        const origenIdSelected = origenSelect.value;
+        
+        pills.forEach(pill => {
+            const id = pill.getAttribute('data-id');
+            if (id === origenIdSelected) {
+                // Si estaba seleccionada, la limpiamos
+                if (pill.classList.contains('active')) {
+                    pill.classList.remove('active');
+                    pill.querySelector('.icon').textContent = '+';
+                    const option = hiddenSelect.querySelector(`option[value="${id}"]`);
+                    if (option) option.selected = false;
+                }
+                pill.classList.add('disabled');
+            } else {
+                pill.classList.remove('disabled');
+            }
+        });
+    }
+
+    // Validación antes de enviar el formulario
+    function validarFormulario() {
+        const selectedCount = Array.from(hiddenSelect.options).filter(opt => opt.selected).length;
+        if (selectedCount === 0) {
+            alert("Por favor, selecciona al menos una sede de destino haciendo clic en las píldoras.");
+            return false;
+        }
+        return true;
+    }
+
+    origenSelect.addEventListener('change', actualizarRestricciones);
+
+    // INICIALIZACIÓN
+    document.addEventListener('DOMContentLoaded', () => {
+        // Recuperar del backend las sedes previamente seleccionadas tras el reload
+        const preSelectedIds = /*[[${destinosId}]]*/ [];
+        if (preSelectedIds && preSelectedIds.length > 0) {
+            preSelectedIds.forEach(id => {
+                const pill = document.querySelector(`.destino-pill[data-id="${id}"]`);
+                if (pill) {
+                    pill.classList.add('active');
+                    pill.querySelector('.icon').textContent = '✓';
+                    const option = hiddenSelect.querySelector(`option[value="${id}"]`);
+                    if (option) option.selected = true;
+                }
+            });
+        }
+        actualizarRestricciones();
+    });
+
+
+    // --- LÓGICA ORIGINAL DE LEAFLET MAPS ---
     const puntosRuta = [];
     
     /*[# th:each="sede : ${rutaOptima}"]*/
@@ -122,86 +255,53 @@
     });
     /*[/]*/
 
-    // 2. Inicializar el mapa (Aún sin centrar)
     const mapa = L.map('mapa-simulacion');
-    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mapa);
 
-
-    // 3. Trabajar estrictamente con los datos de tu DB
     if (puntosRuta.length > 0) {
-        
-        // Nos ubicamos usando la latitud y longitud de tu primer sede (Origen)
         mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 7);
 
-        // Dibujar los marcadores en las coordenadas exactas de tu DB
         puntosRuta.forEach((punto, index) => {
             L.marker([punto.lat, punto.lng])
                 .addTo(mapa)
-                .bindPopup(`<b>Paso ${index + 1}:</b> ${punto.nombre}`)
+                .bindPopup(`<b>Parada ${index + 1}:</b> ${punto.nombre}`)
                 .openPopup();
         });
 
-        // Si hay más de una sede, pedimos a OSRM que busque la carretera entre TUS coordenadas
         if (puntosRuta.length > 1) {
-            
-            // Unimos TUS longitudes y latitudes para enviarlas a OSRM
             const coordsString = puntosRuta.map(p => `${p.lng},${p.lat}`).join(';');
             const urlOSRM = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
 
             fetch(urlOSRM)
                 .then(response => {
-                    if (!response.ok) throw new Error("Error en el servidor OSRM");
+                    if (!response.ok) throw new Error("Error OSRM");
                     return response.json();
                 })
                 .then(data => {
                     if (data.routes && data.routes.length > 0) {
-                        // OSRM devuelve la ruta por la carretera basándose en tus puntos
                         const coordsRutaReal = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-
-                        const polyline = L.polyline(coordsRutaReal, {
-                            color: '#2563eb', // Línea azul de ruta
-                            weight: 5,
-                            opacity: 0.85,
-                            smoothFactor: 1
-                        }).addTo(mapa);
-
-                        // Ajustamos la vista para que toda tu ruta encaje en la pantalla
+                        const polyline = L.polyline(coordsRutaReal, { color: '#2563eb', weight: 5, opacity: 0.85 }).addTo(mapa);
                         mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
                     } else {
                         trazarLineaRectaRespaldo();
                     }
                 })
-                .catch(error => {
-                    console.error("No se pudo calcular la ruta por carretera:", error);
-                    trazarLineaRectaRespaldo();
-                });
-
+                .catch(error => { trazarLineaRectaRespaldo(); });
         } else {
-            // Si solo es un punto, hacemos zoom en esa única coordenada de tu DB
             mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 13);
         }
     } else {
-        // Solo si tu DB no devuelve nada (estado inicial), ponemos una vista general
         mapa.setView([-1.8312, -78.1834], 6);
     }
 
-    // Función auxiliar: Si no hay internet o falla OSRM, une tus coordenadas con línea recta
     function trazarLineaRectaRespaldo() {
         const coordenadasRectas = puntosRuta.map(p => [p.lat, p.lng]);
-        const polyline = L.polyline(coordenadasRectas, {
-            color: '#ef4444', 
-            weight: 4,
-            dashArray: '5, 10',
-            opacity: 0.7
-        }).addTo(mapa);
+        const polyline = L.polyline(coordenadasRectas, { color: '#ef4444', weight: 4, dashArray: '5, 10' }).addTo(mapa);
         mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
     }
-
 /*]]>*/
 </script>
-
 </body>
 </html>
