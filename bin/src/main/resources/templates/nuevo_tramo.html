@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Gaming - Enlazar Sedes</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+        body { background:#f4f6f9; min-height:100vh; display:flex; justify-content:center; align-items:center; padding:40px; }
+        .card { width:100%; max-width:600px; background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); }
+        .header { background:#10b981; color:white; padding:30px; }
+        .header h1 { font-size:28px; margin-bottom:8px; }
+        .header p { opacity: 0.9; font-size: 15px; }
+        form { padding:35px; display:flex; flex-direction:column; }
+        label { margin-bottom:8px; color:#374151; font-weight:600; }
+        select, input { padding:14px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
+        select:focus, input:focus { border-color:#10b981; box-shadow:0 0 0 4px rgba(16,185,129,.15); }
+        input[readonly] { background: #e5e7eb; color: #4b5563; font-weight: bold; cursor: not-allowed; }
+        button { background:#10b981; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; margin-top: 10px; }
+        button:hover { background:#059669; transform:translateY(-2px); }
+        .info-calculo { font-size: 13px; color: #6b7280; margin-top: -15px; margin-bottom: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>Conectar Sedes (Tramos)</h1>
+        <p>Selecciona dos ciudades y el sistema calculará la ruta por carretera.</p>
+    </div>
+
+    <form th:action="@{/tramos/guardar}" th:object="${nuevoTramo}" method="post">
+
+        <label>Sede de Origen</label>
+        <select th:field="*{sedeOrigen}" id="origen" onchange="calcularDistancia()" required>
+            <option value="">Selecciona el origen...</option>
+            <option th:each="sede : ${listaSedes}" 
+                    th:value="${sede.idSede}" 
+                    th:text="${sede.nombreCiudad}"
+                    th:data-lat="${sede.latitud}"
+                    th:data-lng="${sede.longitud}"></option>
+        </select>
+
+        <label>Sede de Destino</label>
+        <select th:field="*{sedeDestino}" id="destino" onchange="calcularDistancia()" required>
+            <option value="">Selecciona el destino...</option>
+            <option th:each="sede : ${listaSedes}" 
+                    th:value="${sede.idSede}" 
+                    th:text="${sede.nombreCiudad}"
+                    th:data-lat="${sede.latitud}"
+                    th:data-lng="${sede.longitud}"></option>
+        </select>
+
+        <label>Distancia Calculada (Km)</label>
+        <input type="number" step="any" th:field="*{distanciaKm}" id="distancia" readonly required placeholder="Calculando automáticamente...">
+        <div class="info-calculo" id="estado-calculo">Esperando selección de ciudades...</div>
+
+        <button type="submit">Guardar Ruta en el Sistema</button>
+
+    </form>
+</div>
+
+<!-- Lógica de OSRM (100% Gratuito y sin API Keys) -->
+<script>
+    function calcularDistancia() {
+        const selectOrigen = document.getElementById('origen');
+        const selectDestino = document.getElementById('destino');
+        const inputDistancia = document.getElementById('distancia');
+        const estadoCalculo = document.getElementById('estado-calculo');
+
+        // Verificamos que ambas ciudades estén seleccionadas
+        if (selectOrigen.value && selectDestino.value) {
+            
+            if (selectOrigen.value === selectDestino.value) {
+                estadoCalculo.innerText = "Error: El origen y el destino no pueden ser la misma ciudad.";
+                estadoCalculo.style.color = "red";
+                inputDistancia.value = "";
+                return;
+            }
+
+            estadoCalculo.innerText = "Calculando ruta por carretera (OpenStreetMap)...";
+            estadoCalculo.style.color = "#10b981";
+
+            const optionOrigen = selectOrigen.options[selectOrigen.selectedIndex];
+            const optionDestino = selectDestino.options[selectDestino.selectedIndex];
+
+            // Extraemos las coordenadas de los atributos de Thymeleaf
+            const latOrigen = optionOrigen.getAttribute("data-lat");
+            const lngOrigen = optionOrigen.getAttribute("data-lng");
+            const latDestino = optionDestino.getAttribute("data-lat");
+            const lngDestino = optionDestino.getAttribute("data-lng");
+
+            // Construimos la URL para la API pública de OSRM (El formato exige: longitud,latitud)
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngOrigen},${latOrigen};${lngDestino},${latDestino}?overview=false`;
+
+            // Ejecutamos la petición al servidor de rutas
+            fetch(osrmUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'Ok' && data.routes.length > 0) {
+                        
+                        const ruta = data.routes[0];
+                        // Convertir metros a kilómetros
+                        const distanciaKm = (ruta.distance / 1000).toFixed(2);
+                        
+                        // Convertir segundos a horas y minutos para mostrar en pantalla
+                        const horas = Math.floor(ruta.duration / 3600);
+                        const minutos = Math.floor((ruta.duration % 3600) / 60);
+                        let tiempoTexto = horas > 0 ? `${horas}h ${minutos}m` : `${minutos}m`;
+
+                        // Llenar el input bloqueado para el formulario
+                        inputDistancia.value = distanciaKm;
+                        
+                        estadoCalculo.innerText = `Ruta por carretera: ${distanciaKm} km | Tiempo: aprox. ${tiempoTexto}`;
+                        estadoCalculo.style.color = "#2563eb"; 
+                    } else {
+                        estadoCalculo.innerText = "No se pudo trazar una ruta por carretera entre estas sedes.";
+                        estadoCalculo.style.color = "red";
+                        inputDistancia.value = "";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error con OSRM:", error);
+                    estadoCalculo.innerText = "Error al conectar con el servidor de rutas.";
+                    estadoCalculo.style.color = "red";
+                    inputDistancia.value = "";
+                });
+
+        } else {
+            inputDistancia.value = "";
+            estadoCalculo.innerText = "Esperando selección de ciudades...";
+            estadoCalculo.style.color = "#6b7280";
+        }
+    }
+</script>
+
+</body>
+</html>

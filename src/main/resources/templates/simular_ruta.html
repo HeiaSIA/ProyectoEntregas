@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Gaming - Trazado de Rutas</title>
+    
+    <!-- Leaflet API (Mapas) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+        body { background:#f4f6f9; min-height:100vh; padding:20px; }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            height: calc(100vh - 40px);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card { background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); display: flex; flex-direction: column; }
+        .header { background:#2563eb; color:white; padding:25px; }
+        .header h1 { font-size:24px; margin-bottom:5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        form { padding:25px; display:flex; flex-direction:column; }
+        label { margin-bottom:8px; color:#374151; font-weight:600; }
+        select { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
+        select:focus { border-color:#2563eb; }
+        
+        /* Contenedor de Píldoras Interactivas */
+        .destinos-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .destino-pill {
+            background: white;
+            border: 1px solid #d1d5db;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .destino-pill:hover:not(.disabled) {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: #f0f6ff;
+        }
+
+        .destino-pill.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .destino-pill.disabled {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        button { background:#2563eb; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; }
+        button:hover { background:#1d4ed8; }
+        
+        .resultados { padding: 25px; border-top: 1px solid #e5e7eb; overflow-y: auto; flex-grow: 1; }
+        .ruta-nodos { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .nodo-item { background: #eff6ff; padding: 10px; border-left: 4px solid #2563eb; border-radius: 4px; font-size: 14px; font-weight: 600; }
+        .distancia-resumen { font-size: 18px; font-weight: bold; color: #10b981; margin-top: 15px; }
+        .no-ruta { color: #ef4444; font-weight: bold; font-size: 14px; }
+
+        #mapa-simulacion {
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0,0,0,.08);
+            border: 2px solid #e5e7eb;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <div class="card">
+        <div class="header">
+            <h1>Simular Envío</h1>
+            <p>Calcula la ruta óptima de entregas.</p>
+        </div>
+
+        <form action="/simular/calcular" method="post" onsubmit="return validarFormulario();">
+            <label>Sede Origen</label>
+            <select name="origenId" id="origenSelect" required>
+                <option value="">Selecciona origen...</option>
+                <option th:each="sede : ${listaSedes}" 
+                        th:value="${sede.idSede}" 
+                        th:text="${sede.nombreCiudad}"
+                        th:selected="${sede.idSede == origenId}"></option>
+            </select>
+
+            <label>Sedes de Destino (Toca para agregar)</label>
+            
+            <!-- Selector múltiple oculto pero enlazado con Thymeleaf/Spring -->
+            <select id="destinosSelectHidden" name="destinosId" multiple style="display: none;" required>
+                <option th:each="sede : ${listaSedes}" 
+                        th:value="${sede.idSede}" 
+                        th:text="${sede.nombreCiudad}"></option>
+            </select>
+
+            <!-- Interfaz visual moderna para seleccionar ciudades con un clic -->
+            <div class="destinos-grid">
+                <div th:each="sede : ${listaSedes}" 
+                     th:data-id="${sede.idSede}"
+                     class="destino-pill"
+                     onclick="toggleDestino(this)">
+                    <span class="icon">+</span>
+                    <span th:text="${sede.nombreCiudad}"></span>
+                </div>
+            </div>
+
+            <button type="submit">Calcular Ruta de Entregas</button>
+        </form>
+
+        <div class="resultados" th:if="${rutaOptima != null}">
+            <h3 style="color:#1e293b; margin-bottom: 10px;">Hoja de Ruta (Orden de Visita)</h3>
+            
+            <div th:if="${not #lists.isEmpty(rutaOptima)}">
+                <div class="ruta-nodos">
+                    <div class="nodo-item" th:each="sede, iter : ${rutaOptima}">
+                        <span th:text="${iter.count} + '. ' + ${sede.nombreCiudad}"></span>
+                    </div>
+                </div>
+                <div class="distancia-resumen" th:text="'Distancia total: ' + ${distanciaTotal} + ' km'"></div>
+            </div>
+
+            <div th:if="${#lists.isEmpty(rutaOptima)}">
+                <p class="no-ruta">❌ No fue posible conectar todos los puntos con los tramos actuales.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="mapa-simulacion"></div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+
+    // ELEMENTOS DEL DOM PARA LAS PÍLDORAS
+    const origenSelect = document.getElementById('origenSelect');
+    const hiddenSelect = document.getElementById('destinosSelectHidden');
+    const pills = document.querySelectorAll('.destino-pill');
+
+    // Función para añadir/remover sedes de entrega al hacer un simple clic
+    function toggleDestino(pill) {
+        if (pill.classList.contains('disabled')) return;
+
+        const id = pill.getAttribute('data-id');
+        const option = hiddenSelect.querySelector(`option[value="${id}"]`);
+        
+        if (pill.classList.contains('active')) {
+            // Deseleccionar sede
+            pill.classList.remove('active');
+            pill.querySelector('.icon').textContent = '+';
+            if (option) option.selected = false;
+        } else {
+            // Seleccionar sede
+            pill.classList.add('active');
+            pill.querySelector('.icon').textContent = '✓';
+            if (option) option.selected = true;
+        }
+    }
+
+    // Evita que la ciudad de origen sea elegible como destino
+    function actualizarRestricciones() {
+        const origenIdSelected = origenSelect.value;
+        
+        pills.forEach(pill => {
+            const id = pill.getAttribute('data-id');
+            if (id === origenIdSelected) {
+                // Si estaba seleccionada, la limpiamos
+                if (pill.classList.contains('active')) {
+                    pill.classList.remove('active');
+                    pill.querySelector('.icon').textContent = '+';
+                    const option = hiddenSelect.querySelector(`option[value="${id}"]`);
+                    if (option) option.selected = false;
+                }
+                pill.classList.add('disabled');
+            } else {
+                pill.classList.remove('disabled');
+            }
+        });
+    }
+
+    // Validación antes de enviar el formulario
+    function validarFormulario() {
+        const selectedCount = Array.from(hiddenSelect.options).filter(opt => opt.selected).length;
+        if (selectedCount === 0) {
+            alert("Por favor, selecciona al menos una sede de destino haciendo clic en las píldoras.");
+            return false;
+        }
+        return true;
+    }
+
+    origenSelect.addEventListener('change', actualizarRestricciones);
+
+    // INICIALIZACIÓN
+    document.addEventListener('DOMContentLoaded', () => {
+        // Recuperar del backend las sedes previamente seleccionadas tras el reload
+        const preSelectedIds = /*[[${destinosId}]]*/ [];
+        if (preSelectedIds && preSelectedIds.length > 0) {
+            preSelectedIds.forEach(id => {
+                const pill = document.querySelector(`.destino-pill[data-id="${id}"]`);
+                if (pill) {
+                    pill.classList.add('active');
+                    pill.querySelector('.icon').textContent = '✓';
+                    const option = hiddenSelect.querySelector(`option[value="${id}"]`);
+                    if (option) option.selected = true;
+                }
+            });
+        }
+        actualizarRestricciones();
+    });
+
+
+    // --- LÓGICA ORIGINAL DE LEAFLET MAPS ---
+    const puntosRuta = [];
+    
+    /*[# th:each="sede : ${rutaOptima}"]*/
+    puntosRuta.push({
+        nombre: /*[[${sede.nombreCiudad}]]*/ '',
+        lat: /*[[${sede.latitud}]]*/ 0,
+        lng: /*[[${sede.longitud}]]*/ 0
+    });
+    /*[/]*/
+
+    const mapa = L.map('mapa-simulacion');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapa);
+
+    if (puntosRuta.length > 0) {
+        mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 7);
+
+        puntosRuta.forEach((punto, index) => {
+            L.marker([punto.lat, punto.lng])
+                .addTo(mapa)
+                .bindPopup(`<b>Parada ${index + 1}:</b> ${punto.nombre}`)
+                .openPopup();
+        });
+
+        if (puntosRuta.length > 1) {
+            const coordsString = puntosRuta.map(p => `${p.lng},${p.lat}`).join(';');
+            const urlOSRM = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+
+            fetch(urlOSRM)
+                .then(response => {
+                    if (!response.ok) throw new Error("Error OSRM");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.routes && data.routes.length > 0) {
+                        const coordsRutaReal = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                        const polyline = L.polyline(coordsRutaReal, { color: '#2563eb', weight: 5, opacity: 0.85 }).addTo(mapa);
+                        mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+                    } else {
+                        trazarLineaRectaRespaldo();
+                    }
+                })
+                .catch(error => { trazarLineaRectaRespaldo(); });
+        } else {
+            mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 13);
+        }
+    } else {
+        mapa.setView([-1.8312, -78.1834], 6);
+    }
+
+    function trazarLineaRectaRespaldo() {
+        const coordenadasRectas = puntosRuta.map(p => [p.lat, p.lng]);
+        const polyline = L.polyline(coordenadasRectas, { color: '#ef4444', weight: 4, dashArray: '5, 10' }).addTo(mapa);
+        mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+    }
+/*]]>*/
+</script>
+</body>
+</html>

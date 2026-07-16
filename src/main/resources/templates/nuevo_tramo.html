@@ -6,70 +6,325 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
         body { background:#f4f6f9; min-height:100vh; display:flex; justify-content:center; align-items:center; padding:40px; }
-        .card { width:100%; max-width:600px; background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); }
-        .header { background:#10b981; color:white; padding:30px; }
-        .header h1 { font-size:28px; margin-bottom:8px; }
-        .header p { opacity: 0.9; font-size: 15px; }
-        form { padding:35px; display:flex; flex-direction:column; }
-        label { margin-bottom:8px; color:#374151; font-weight:600; }
-        select, input { padding:14px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
+        
+        .container { width:100%; max-width:1300px; display:flex; flex-direction:column; gap:20px; }
+        
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 1fr 1.3fr; 
+            gap: 30px; 
+            align-items: start; 
+        }
+        
+        .card { width:100%; background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); }
+        .header { background:#10b981; color:white; padding:25px 30px; }
+        .header h1 { font-size:24px; margin-bottom:6px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        
+        form { padding:30px; display:flex; flex-direction:column; }
+        label { margin-bottom:8px; color:#374151; font-weight:600; font-size: 14px; }
+        select, input { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; transition: .2s; }
         select:focus, input:focus { border-color:#10b981; box-shadow:0 0 0 4px rgba(16,185,129,.15); }
         input[readonly] { background: #e5e7eb; color: #4b5563; font-weight: bold; cursor: not-allowed; }
-        button { background:#10b981; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; margin-top: 10px; }
-        button:hover { background:#059669; transform:translateY(-2px); }
+        
+        button[type="submit"] { background:#10b981; color:white; border:none; padding:14px; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:.3s; margin-top: 5px; }
+        button[type="submit"]:hover { background:#059669; transform:translateY(-2px); }
+
+        /* Botón de Redirección al Mapa */
+        .btn-mostrar {
+            display: block;
+            text-align: center;
+            background: #2563eb;
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: .3s;
+            margin-top: 12px;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+        }
+        .btn-mostrar:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37,99,235,0.3);
+        }
+        
         .info-calculo { font-size: 13px; color: #6b7280; margin-top: -15px; margin-bottom: 20px; font-style: italic; }
+        
+        /* ==================== ALERTAS FLOTANTES (TOASTS) ==================== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 420px;
+            width: 90%;
+        }
+        .alerta {
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            animation: slideIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, fadeOut 0.5s ease 4s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-15px); visibility: hidden; }
+        }
+        .alerta-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alerta-exito { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+        /* Estilos de Tabla */
+        .tabla-seccion { padding: 30px; background: white; }
+        .tabla-seccion h2 { color: #1f2937; margin-bottom: 20px; font-size: 20px; font-weight: 700; }
+        
+        .tabla-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #f9fafb; color: #4b5563; font-weight: 600; padding: 14px; font-size: 13px; border-bottom: 2px solid #e5e7eb; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 14px; border-bottom: 1px solid #f3f4f6; color: #111827; font-size: 14px; }
+        tr:hover td { background-color: #f9fafb; }
+        
+        .badge-distancia { background: #e0f2fe; color: #0369a1; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px; display: inline-block; }
+
+        /* Estilos de Botones de Acciones */
+        .btn-accion { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; }
+        .btn-editar { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; margin-right: 5px; }
+        .btn-editar:hover { background: #fde68a; }
+        .btn-eliminar { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .btn-eliminar:hover { background: #fca5a5; }
+
+        /* ==================== ESTILOS DEL MODAL (EL CUADRADO) ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: white;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            background: #2563eb;
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 { font-size: 20px; font-weight: 700; }
+        .btn-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: 0.2s;
+            line-height: 1;
+        }
+        .btn-close:hover { opacity: 1; }
+        .modal-body { padding: 25px; }
+        .modal-body form { padding: 0; }
+        .modal-body select:focus, .modal-body input:focus { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,.15); }
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-btn-group button { flex: 1; }
+        .btn-modal-guardar { background: #2563eb; }
+        .btn-modal-guardar:hover { background: #1d4ed8; }
+        .btn-modal-cancelar { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+        .btn-modal-cancelar:hover { background: #e5e7eb; transform: none; }
+
+        @media (max-width: 992px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            body { padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <h1>Conectar Sedes (Tramos)</h1>
-        <p>Selecciona dos ciudades y el sistema calculará la ruta por carretera.</p>
+<!-- Contenedor flotante de Toasts -->
+<div class="toast-container">
+    <div th:if="${mensajeError}" class="alerta alerta-error">
+        <span th:text="'⚠️ ' + ${mensajeError}"></span>
     </div>
-
-    <form th:action="@{/tramos/guardar}" th:object="${nuevoTramo}" method="post">
-
-        <label>Sede de Origen</label>
-        <select th:field="*{sedeOrigen}" id="origen" onchange="calcularDistancia()" required>
-            <option value="">Selecciona el origen...</option>
-            <option th:each="sede : ${listaSedes}" 
-                    th:value="${sede.idSede}" 
-                    th:text="${sede.nombreCiudad}"
-                    th:data-lat="${sede.latitud}"
-                    th:data-lng="${sede.longitud}"></option>
-        </select>
-
-        <label>Sede de Destino</label>
-        <select th:field="*{sedeDestino}" id="destino" onchange="calcularDistancia()" required>
-            <option value="">Selecciona el destino...</option>
-            <option th:each="sede : ${listaSedes}" 
-                    th:value="${sede.idSede}" 
-                    th:text="${sede.nombreCiudad}"
-                    th:data-lat="${sede.latitud}"
-                    th:data-lng="${sede.longitud}"></option>
-        </select>
-
-        <label>Distancia Calculada (Km)</label>
-        <input type="number" step="any" th:field="*{distanciaKm}" id="distancia" readonly required placeholder="Calculando automáticamente...">
-        <div class="info-calculo" id="estado-calculo">Esperando selección de ciudades...</div>
-
-        <button type="submit">Guardar Ruta en el Sistema</button>
-
-    </form>
+    <div th:if="${mensajeExito}" class="alerta alerta-exito">
+        <span th:text="'✅ ' + ${mensajeExito}"></span>
+    </div>
 </div>
 
-<!-- Lógica de OSRM (100% Gratuito y sin API Keys) -->
+<div class="container">
+    <div class="grid-layout">
+        
+        <!-- Formulario de Creación (Izquierda) -->
+        <div class="card">
+            <div class="header">
+                <h1>Conectar Sedes</h1>
+                <p>Selecciona dos ciudades para calcular la ruta.</p>
+            </div>
+
+            <form th:action="@{/tramos/guardar}" th:object="${nuevoTramo}" method="post">
+                <label>Sede de Origen</label>
+                <select th:field="*{sedeOrigen}" id="origen" onchange="calcularDistancia()" required>
+                    <option value="">Selecciona el origen...</option>
+                    <option th:each="sede : ${listaSedes}" 
+                            th:value="${sede.idSede}" 
+                            th:text="${sede.nombreCiudad}"
+                            th:data-lat="${sede.latitud}"
+                            th:data-lng="${sede.longitud}"></option>
+                </select>
+
+                <label>Sede de Destino</label>
+                <select th:field="*{sedeDestino}" id="destino" onchange="calcularDistancia()" required>
+                    <option value="">Selecciona el destino...</option>
+                    <option th:each="sede : ${listaSedes}" 
+                            th:value="${sede.idSede}" 
+                            th:text="${sede.nombreCiudad}"
+                            th:data-lat="${sede.latitud}"
+                            th:data-lng="${sede.longitud}"></option>
+                </select>
+
+                <label>Distancia Calculada (Km)</label>
+                <input type="number" step="any" th:field="*{distanciaKm}" id="distancia" readonly required placeholder="Calculando automáticamente...">
+                <div class="info-calculo" id="estado-calculo">Esperando selección de ciudades...</div>
+
+                <button type="submit">Guardar Ruta en el Sistema</button>
+                
+                <!-- NUEVO BOTÓN AGREGADO -->
+                <a href="/tramos/mapa" class="btn-mostrar">🗺️ Mostrar Mapa de Red</a>
+            </form>
+        </div>
+
+        <!-- Historial en Tabla (Derecha) -->
+        <div class="card">
+            <div class="tabla-seccion">
+                <h2>Tramos Conectados</h2>
+                <div class="tabla-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Distancia</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(listaTramos)}">
+                                <td colspan="5" style="text-align: center; color: #9ca3af; font-style: italic; padding: 30px 0;">
+                                    No hay tramos guardados en el sistema actualmente.
+                                </td>
+                            </tr>
+                            <tr th:each="tramo : ${listaTramos}">
+                                <td th:text="${tramo.idTramo}" style="font-weight: 600; color: #6b7280;"></td>
+                                <td th:text="${tramo.sedeOrigen.nombreCiudad}"></td>
+                                <td th:text="${tramo.sedeDestino.nombreCiudad}"></td>
+                                <td>
+                                    <span class="badge-distancia" th:text="${tramo.distanciaKm} + ' Km'"></span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn-accion btn-editar" th:onclick="'abrirModalEditar(' + ${tramo.idTramo} + ')'">
+                                        ✏️ Editar
+                                    </button>
+                                    <a th:href="@{/tramos/eliminar/{id}(id=${tramo.idTramo})}" 
+                                       class="btn-accion btn-eliminar"
+                                       onclick="return confirm('¿Estás seguro de que deseas eliminar este tramo de conexión?');">
+                                        🗑️ Eliminar
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div> 
+</div>
+
+<!-- ==================== CONTENEDOR DEL MODAL "EL CUADRADO" ==================== -->
+<div id="modalEditar" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Editar Conexión</h2>
+            <button type="button" class="btn-close" onclick="cerrarModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBodyContainer">
+            <!-- Cargando dinámicamente... -->
+        </div>
+    </div>
+</div>
+
 <script>
+    // --- Lógica del Modal con Fragmento de Thymeleaf ---
+    function abrirModalEditar(id) {
+        const modal = document.getElementById('modalEditar');
+        const modalBody = document.getElementById('modalBodyContainer');
+        
+        modalBody.innerHTML = "<p style='text-align: center; color: #6b7280;'>Cargando formulario de edición...</p>";
+        modal.classList.add('active');
+        
+        fetch(`/tramos/editar/${id}`)
+            .then(response => {
+                if(!response.ok) throw new Error("No se pudo obtener el fragmento");
+                return response.text();
+            })
+            .then(htmlFragment => {
+                modalBody.innerHTML = htmlFragment;
+            })
+            .catch(error => {
+                modalBody.innerHTML = "<p style='color:red; text-align:center;'>Error al cargar el fragmento de edición.</p>";
+                console.error(error);
+            });
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalEditar').classList.remove('active');
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalEditar');
+        if (event.target === modal) {
+            cerrarModal();
+        }
+    }
+
+    // --- Cálculo OSRM para Creación ---
     function calcularDistancia() {
         const selectOrigen = document.getElementById('origen');
         const selectDestino = document.getElementById('destino');
         const inputDistancia = document.getElementById('distancia');
         const estadoCalculo = document.getElementById('estado-calculo');
 
-        // Verificamos que ambas ciudades estén seleccionadas
         if (selectOrigen.value && selectDestino.value) {
-            
             if (selectOrigen.value === selectDestino.value) {
                 estadoCalculo.innerText = "Error: El origen y el destino no pueden ser la misma ciudad.";
                 estadoCalculo.style.color = "red";
@@ -77,61 +332,89 @@
                 return;
             }
 
-            estadoCalculo.innerText = "Calculando ruta por carretera (OpenStreetMap)...";
+            estadoCalculo.innerText = "Calculando ruta por carretera...";
             estadoCalculo.style.color = "#10b981";
 
             const optionOrigen = selectOrigen.options[selectOrigen.selectedIndex];
             const optionDestino = selectDestino.options[selectDestino.selectedIndex];
 
-            // Extraemos las coordenadas de los atributos de Thymeleaf
             const latOrigen = optionOrigen.getAttribute("data-lat");
             const lngOrigen = optionOrigen.getAttribute("data-lng");
             const latDestino = optionDestino.getAttribute("data-lat");
             const lngDestino = optionDestino.getAttribute("data-lng");
 
-            // Construimos la URL para la API pública de OSRM (El formato exige: longitud,latitud)
             const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngOrigen},${latOrigen};${lngDestino},${latDestino}?overview=false`;
 
-            // Ejecutamos la petición al servidor de rutas
             fetch(osrmUrl)
                 .then(response => response.json())
                 .then(data => {
                     if (data.code === 'Ok' && data.routes.length > 0) {
-                        
                         const ruta = data.routes[0];
-                        // Convertir metros a kilómetros
                         const distanciaKm = (ruta.distance / 1000).toFixed(2);
-                        
-                        // Convertir segundos a horas y minutos para mostrar en pantalla
-                        const horas = Math.floor(ruta.duration / 3600);
-                        const minutos = Math.floor((ruta.duration % 3600) / 60);
-                        let tiempoTexto = horas > 0 ? `${horas}h ${minutos}m` : `${minutos}m`;
-
-                        // Llenar el input bloqueado para el formulario
                         inputDistancia.value = distanciaKm;
-                        
-                        estadoCalculo.innerText = `Ruta por carretera: ${distanciaKm} km | Tiempo: aprox. ${tiempoTexto}`;
+                        estadoCalculo.innerText = `Ruta calculada: ${distanciaKm} km`;
                         estadoCalculo.style.color = "#2563eb"; 
                     } else {
-                        estadoCalculo.innerText = "No se pudo trazar una ruta por carretera entre estas sedes.";
+                        estadoCalculo.innerText = "No se pudo trazar una ruta por carretera.";
                         estadoCalculo.style.color = "red";
                         inputDistancia.value = "";
                     }
                 })
                 .catch(error => {
-                    console.error("Error con OSRM:", error);
-                    estadoCalculo.innerText = "Error al conectar con el servidor de rutas.";
+                    estadoCalculo.innerText = "Error de conexión con OSRM.";
                     estadoCalculo.style.color = "red";
-                    inputDistancia.value = "";
                 });
+        }
+    }
 
-        } else {
-            inputDistancia.value = "";
-            estadoCalculo.innerText = "Esperando selección de ciudades...";
-            estadoCalculo.style.color = "#6b7280";
+    // --- Cálculo OSRM dentro del Modal ---
+    function calcularDistanciaEdit() {
+        const selectOrigen = document.getElementById('editOrigen');
+        const selectDestino = document.getElementById('editDestino');
+        const inputDistancia = document.getElementById('editDistancia');
+        const estadoCalculo = document.getElementById('edit-estado-calculo');
+
+        if (selectOrigen && selectDestino && selectOrigen.value && selectDestino.value) {
+            if (selectOrigen.value === selectDestino.value) {
+                estadoCalculo.innerText = "Error: El origen y el destino no pueden ser la misma ciudad.";
+                estadoCalculo.style.color = "red";
+                inputDistancia.value = "";
+                return;
+            }
+
+            estadoCalculo.innerText = "Recalculando ruta...";
+            estadoCalculo.style.color = "#2563eb";
+
+            const optionOrigen = selectOrigen.options[selectOrigen.selectedIndex];
+            const optionDestino = selectDestino.options[selectDestino.selectedIndex];
+
+            const latOrigen = optionOrigen.getAttribute("data-lat");
+            const lngOrigen = optionOrigen.getAttribute("data-lng");
+            const latDestino = optionDestino.getAttribute("data-lat");
+            const lngDestino = optionDestino.getAttribute("data-lng");
+
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${lngOrigen},${latOrigen};${lngDestino},${latDestino}?overview=false`;
+
+            fetch(osrmUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 'Ok' && data.routes.length > 0) {
+                        const ruta = data.routes[0];
+                        const distanciaKm = (ruta.distance / 1000).toFixed(2);
+                        inputDistancia.value = distanciaKm;
+                        estadoCalculo.innerText = `Ruta recalculada: ${distanciaKm} km`;
+                        estadoCalculo.style.color = "#10b981"; 
+                    } else {
+                        estadoCalculo.innerText = "Error al trazar ruta.";
+                        estadoCalculo.style.color = "red";
+                    }
+                })
+                .catch(error => {
+                    estadoCalculo.innerText = "Error con servidor OSRM.";
+                    estadoCalculo.style.color = "red";
+                });
         }
     }
 </script>
-
 </body>
 </html>
