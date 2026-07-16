@@ -22,16 +22,20 @@ public class Producto {
     @Column(nullable = false)
     private String imagen; // Ej: laptop_asus.jpg
 
+    @Column(nullable = false)
+    private Integer stock = 0; // NUEVO CAMPO: Inicializado en 0 por defecto
+
     // Constructor vacío (Obligatorio para Spring Boot)
     public Producto() {
     }
 
-    // Constructor con parámetros
-    public Producto(String nombre, String descripcion, Double precioBase, String imagen) {
+    // Constructor con parámetros (Actualizado con stock)
+    public Producto(String nombre, String descripcion, Double precioBase, String imagen, Integer stock) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precioBase = precioBase;
         this.imagen = imagen;
+        this.stock = stock;
     }
 
     // Getters y Setters
@@ -76,4 +80,12 @@ public class Producto {
         this.imagen = imagen;
     }
 
+    // NUEVO GETTER Y SETTER PARA STOCK
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
 }

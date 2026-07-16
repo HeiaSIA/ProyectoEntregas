@@ -16,6 +16,10 @@
             --nexus-cyan: #00f0ff;
             --nexus-text: #e2e8f0;
             --nexus-text-muted: #94a3b8;
+            /* Colores de alertas de stock */
+            --stock-ok: #10b981;
+            --stock-low: #f59e0b;
+            --stock-out: #ef4444;
         }
 
         body {
@@ -137,6 +141,7 @@
             padding: 14px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
         }
 
         table th {
@@ -160,6 +165,38 @@
             border-radius: 8px;
             object-fit: cover;
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Insignias de Stock Neón */
+        .badge-stock {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .stock-alto {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--stock-ok);
+            border: 1px solid var(--stock-ok);
+            text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+        }
+
+        .stock-bajo {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--stock-low);
+            border: 1px solid var(--stock-low);
+            text-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+        }
+
+        .sin-stock {
+            background-color: rgba(239, 104, 104, 0.1);
+            color: var(--stock-out);
+            border: 1px solid var(--stock-out);
+            text-shadow: 0 0 5px rgba(239, 104, 104, 0.5);
         }
 
         /* Botones de acción dentro de la tabla */
@@ -264,6 +301,15 @@
                 placeholder="0.00"
                 required>
 
+        <!-- NUEVO CAMPO: Cantidad en Stock -->
+        <label>Stock (Cantidad):</label>
+        <input
+                type="number"
+                min="0"
+                th:field="*{stock}"
+                placeholder="Ej: 15"
+                required>
+
         <label>Imagen del producto:</label>
         <!-- No es requerida en edición para evitar obligar al usuario a subirla de nuevo -->
         <input
@@ -301,6 +347,7 @@
         <th>Nombre</th>
         <th>Descripción</th>
         <th>Precio</th>
+        <th>Stock</th> <!-- NUEVA COLUMNA -->
         <th>Acciones</th>
     </tr>
     </thead>
@@ -325,6 +372,18 @@
 
         <!-- Precio formateado con 2 decimales y separador de miles -->
         <td th:text="${'$' + #numbers.formatDecimal(prod.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+
+        <!-- NUEVA COLUMNA DINÁMICA: Muestra badges de colores de acuerdo a la cantidad -->
+        <td>
+            <!-- Si hay más de 5 unidades (Stock Ok) -->
+            <span th:if="${prod.stock > 5}" class="badge-stock stock-alto" th:text="${prod.stock + ' Uds'}"></span>
+            
+            <!-- Si hay entre 1 y 5 unidades (Poco Stock) -->
+            <span th:if="${prod.stock <= 5 and prod.stock > 0}" class="badge-stock stock-bajo" th:text="${prod.stock + ' ¡Pocas!'}"></span>
+            
+            <!-- Si es 0 o nulo (Agotado) -->
+            <span th:if="${prod.stock == 0 or prod.stock == null}" class="badge-stock sin-stock">Agotado</span>
+        </td>
 
         <!-- Columna de Botones de Acción (Editar / Eliminar con Boxicons) -->
         <td>

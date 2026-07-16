@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,13 +34,15 @@
         </span>
       </div>
 
-      <!-- Info del Usuario Logueado y Carrito -->
       <div class="flex items-center gap-6">
         <span id="userGreeting" class="text-sm font-semibold text-nexusCyan">Cargando piloto...</span>
         <button class="relative p-1">
           <span class="text-xl">🛒</span>
           <span id="cartCount" class="absolute -top-1 -right-1 bg-nexusPurple text-[10px] text-white font-bold px-1.5 py-0.5 rounded-full">0</span>
         </button>
+        <a href="/productos" class="text-xs text-nexusCyan hover:text-white font-bold border border-nexusCyan/30 px-3 py-1.5 rounded-lg hover:bg-nexusCyan/10 transition-all">
+          ⚙️ Panel Admin
+        </a>
         <button onclick="cerrarSesion()" class="text-xs text-red-400 hover:text-red-300 font-bold border border-red-500/30 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all">
           Cerrar Sesión
         </button>
@@ -55,44 +57,64 @@
       <p class="text-nexusPurple font-medium text-sm tracking-wide uppercase">Equipamiento de alto rendimiento optimizado</p>
     </div>
 
-    <!-- Grid del Catálogo -->
+    <!-- Grid del Catálogo Dinámico -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       
-      <!-- Producto de Ejemplo 1 -->
-      <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
+      <div th:each="prod : ${listaProductos}" 
+           class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
+        
         <div>
-          <img src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=400&auto=format&fit=crop" alt="GPU" class="w-full h-40 object-cover rounded-lg mb-4">
-          <span class="text-[10px] text-nexusCyan uppercase font-bold tracking-widest">Gráficas</span>
-          <h3 class="font-bold text-white text-lg mt-1">RTX 4070 SUPER Ti</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">Máximo rendimiento en trazado de rayos y renderizado 4K.</p>
-          <p class="text-nexusCyan font-black text-xl mt-4">$849.00</p>
-        </div>
-        <div class="mt-6 space-y-2">
-          <button onclick="agregarAlCarrito('RTX 4070 SUPER Ti')" class="w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2.5 border border-nexusPurple/30 rounded-lg hover:bg-nexusPurple/20 cursor-pointer">
-            🛒 Añadir al carrito
-          </button>
-          <button onclick="comprarProducto('RTX 4070 SUPER Ti')" class="w-full text-center text-xs text-black bg-nexusCyan hover:bg-white font-extrabold py-2.5 rounded-lg transition-colors cursor-pointer">
-            ⚡ Comprar ahora
-          </button>
-        </div>
-      </div>
+          <img th:if="${prod.imagen != null}" 
+               th:src="@{'/imagenes/' + ${prod.imagen}}" 
+               th:alt="${prod.nombre}" 
+               class="w-full h-40 object-cover rounded-lg mb-4 border border-nexusPurple/10">
+          
+          <img th:if="${prod.imagen == null}" 
+               src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=400&auto=format&fit=crop" 
+               alt="Imagen por defecto" 
+               class="w-full h-40 object-cover rounded-lg mb-4 opacity-50">
 
-      <!-- Producto de Ejemplo 2 -->
-      <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
-        <div>
-          <img src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=400&auto=format&fit=crop" alt="CPU" class="w-full h-40 object-cover rounded-lg mb-4">
-          <span class="text-[10px] text-nexusPurple uppercase font-bold tracking-widest">Procesadores</span>
-          <h3 class="font-bold text-white text-lg mt-1">AMD Ryzen 7 7800X3D</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed">El procesador definitivo para gaming competitivo.</p>
-          <p class="text-nexusPurple font-black text-xl mt-4">$449.00</p>
+          <div class="flex items-center justify-between mt-1 mb-2">
+            <span class="text-[10px] text-nexusCyan uppercase font-bold tracking-widest">NEXUS GEAR</span>
+            
+            <span th:if="${prod.stock > 5}" class="text-[10px] text-green-400 font-extrabold tracking-wide">
+              🟢 En Stock
+            </span>
+            <span th:if="${prod.stock <= 5 and prod.stock > 0}" class="text-[10px] text-amber-400 font-extrabold tracking-wide" 
+                  th:text="'🟡 ¡Solo ' + ${prod.stock} + '!'">
+            </span>
+            <span th:if="${prod.stock == 0 or prod.stock == null}" class="text-[10px] text-red-500 font-extrabold tracking-wide">
+              🔴 Agotado
+            </span>
+          </div>
+
+          <h3 class="font-bold text-white text-lg mt-1" th:text="${prod.nombre}">Nombre del Hardware</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed" th:text="${prod.descripcion}">Descripción corta técnica.</p>
+          <p class="text-nexusCyan font-black text-xl mt-4" th:text="${'$' + #numbers.formatDecimal(prod.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}">$0.00</p>
         </div>
+
         <div class="mt-6 space-y-2">
-          <button onclick="agregarAlCarrito('AMD Ryzen 7 7800X3D')" class="w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2.5 border border-nexusCyan/30 rounded-lg hover:bg-nexusCyan/20 cursor-pointer">
-            🛒 Añadir al carrito
-          </button>
-          <button onclick="comprarProducto('AMD Ryzen 7 7800X3D')" class="w-full text-center text-xs text-white bg-nexusPurple hover:bg-purple-500 font-extrabold py-2.5 rounded-lg transition-colors cursor-pointer">
-            ⚡ Comprar ahora
-          </button>
+          
+          <th:block th:if="${prod.stock > 0}">
+            <!-- Corregido usando th:data-nombre y leyendo el atributo en el click -->
+            <button th:data-nombre="${prod.nombre}"
+                    onclick="agregarAlCarrito(this.getAttribute('data-nombre'))" 
+                    class="w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2.5 border border-nexusPurple/30 rounded-lg hover:bg-nexusPurple/20 cursor-pointer">
+              🛒 Añadir al carrito
+            </button>
+            <button th:data-nombre="${prod.nombre}"
+                    onclick="comprarProducto(this.getAttribute('data-nombre'))" 
+                    class="w-full text-center text-xs text-black bg-nexusCyan hover:bg-white font-extrabold py-2.5 rounded-lg transition-colors cursor-pointer">
+              ⚡ Comprar ahora
+            </button>
+          </th:block>
+
+          <th:block th:if="${prod.stock == 0 or prod.stock == null}">
+            <button class="w-full text-center text-xs text-gray-500 bg-gray-800/40 font-bold py-3 rounded-lg border border-gray-700/30 cursor-not-allowed" disabled>
+              ❌ Fuera de Stock
+            </button>
+          </th:block>
+
         </div>
       </div>
 
@@ -100,10 +122,8 @@
   </main>
 
   <script>
-    // Recuperar datos de sesión del usuario
     const userName = localStorage.getItem('usuario_nombre');
     if (!userName) {
-        // Redirigir al login si intenta entrar sin estar logueado
         window.location.href = '/';
     } else {
         document.getElementById('userGreeting').textContent = `Piloto: ${userName}`;
