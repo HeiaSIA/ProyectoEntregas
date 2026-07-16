@@ -1,71 +1,295 @@
 <!DOCTYPE html>
-<html lang="es">
+<!-- Definimos el idioma español y habilitamos el espacio de nombres de Thymeleaf (th:) -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Gaming - Panel Administrativo</title>
+    
+    <!-- CDN de Boxicons: Librería de iconos que utilizamos en el diseño de las tarjetas -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
     <style>
+        /* 
+           =========================================
+           VARIABLES GLOBALES (Paleta de Colores)
+           =========================================
+           Centralizamos los colores del manual de marca de Nexus Gaming
+           para facilitar cambios de diseño rápidos.
+        */
         :root {
-            --electric-blue: #00f2ff;
-            --neon-purple: #bc13fe;
+            --nexus-dark: #0B0C10;        /* Fondo ultra oscuro cyberpunk */
+            --nexus-card: #14151F;        /* Color gris azulado para contraste de tarjetas */
+            --nexus-cyan: #00F0FF;        /* Cyan neón / Electric Blue */
+            --nexus-purple: #BC13FE;      /* Púrpura neón principal */
+            --nexus-text: #E2E8F0;        /* Texto principal claro */
+            --nexus-text-muted: #94A3B8;  /* Texto secundario / descripciones */
         }
+
+        /* 
+           =========================================
+           ESTILOS GENERALES Y FONDO DE LA PÁGINA
+           =========================================
+        */
         body { 
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--nexus-dark);
+            /* Gradientes radiales muy suaves para dar profundidad de iluminación neón al fondo */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.06) 0%, transparent 40%);
+            color: var(--nexus-text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh; /* Ocupa todo el alto de la pantalla */
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        h1 { text-shadow: 0 0 10px var(--electric-blue); }
-        
-        /* Modificado a 3 columnas para que entren las 3 opciones */
-        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; max-width: 1000px; }
-        
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px;
+
+        /* 
+           =========================================
+           ESTRUCTURA DEL LOGO Y HEADER (CABECERA)
+           =========================================
+        */
+        .brand-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
             text-align: center;
-            border: 2px solid var(--neon-purple);
-            border-radius: 20px;
-            text-decoration: none;
-            color: white;
-            transition: 0.3s;
         }
-        .card:hover {
-            background: var(--neon-purple);
-            box-shadow: 0 0 30px var(--neon-purple);
-            transform: scale(1.05);
+
+        /* Logo con efectos de fusión y tamaño ampliado */
+        .brand-logo {
+            max-width: 220px; /* Tamaño más imponente y visible */
+            height: auto;
+            margin-bottom: 20px;
+            
+            /* EFECTO DE FUSIÓN DE COLOR:
+               Elimina los colores oscuros o negros de fondo de la imagen
+               y mezcla los colores brillantes directamente con el fondo del sitio web. */
+            mix-blend-mode: screen; 
+            
+            /* Resplandor neón difuminado ultra suave para integrarlo en la atmósfera */
+            filter: drop-shadow(0 0 20px rgba(188, 19, 254, 0.5)) 
+                    drop-shadow(0 0 45px rgba(0, 240, 255, 0.3));
+            
+            /* Suavizado en la animación de rotación y escalado al pasar el ratón */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        filter 0.4s ease;
         }
-        .card h2 { margin: 0 0 10px 0; color: var(--electric-blue); font-size: 22px; }
-        .card p { margin: 0; color: #cbd5e1; font-size: 14px; }
         
+        /* Efecto al pasar el cursor sobre el logo: se agranda levemente e intensifica su brillo */
+        .brand-logo:hover {
+            transform: scale(1.05) rotate(1deg);
+            filter: drop-shadow(0 0 30px rgba(188, 19, 254, 0.7)) 
+                    drop-shadow(0 0 60px rgba(0, 240, 255, 0.5));
+        }
+
+        /* Título principal con degradado neón */
+        h1 { 
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin: 0;
+            text-transform: uppercase;
+            color: transparent;
+            background-clip: text; /* El fondo degradado se adapta solo al contorno de la letra */
+            -webkit-background-clip: text;
+            background-image: linear-gradient(135deg, var(--nexus-cyan), var(--nexus-purple));
+            filter: drop-shadow(0 2px 8px rgba(0, 240, 255, 0.3));
+        }
+
+        /* Subtítulo decorativo con tracking expandido */
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--nexus-purple);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-weight: 700;
+            margin-top: 8px;
+            text-shadow: 0 0 10px rgba(188, 19, 254, 0.4);
+        }
+
+        /* 
+           =========================================
+           GRID DE MENÚS (Estructura de Tarjetas)
+           =========================================
+        */
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); /* 3 Columnas simétricas en escritorio */
+            gap: 25px; 
+            max-width: 1100px; 
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        /* Diseño base de cada tarjeta de opción */
+        .card {
+            background: var(--nexus-card);
+            padding: 35px 25px;
+            text-align: center;
+            border: 1px solid rgba(188, 19, 254, 0.15); /* Borde púrpura sutil */
+            border-radius: 16px;
+            text-decoration: none; /* Elimina la línea de los enlaces */
+            color: var(--nexus-text);
+            position: relative; /* Requerido para posicionar los pseudo-elementos ::before y ::after */
+            overflow: hidden; /* Oculta los elementos que sobresalen en las animaciones */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Capa de iluminación interna de fondo que se activa al pasar el cursor (Hover) */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(188, 19, 254, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1; /* Detrás del texto */
+        }
+
+        /* Estilo para los iconos de Boxicons */
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--nexus-cyan);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3));
+            z-index: 2; /* Encima del background */
+        }
+        
+        .card h2 { 
+            margin: 0 0 10px 0; 
+            color: #FFFFFF; 
+            font-size: 1.25rem; 
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            z-index: 2;
+        }
+        
+        .card p { 
+            margin: 0; 
+            color: var(--nexus-text-muted); 
+            font-size: 0.85rem; 
+            line-height: 1.5;
+            z-index: 2;
+        }
+
+        /* 
+           =========================================
+           COMPORTAMIENTO INTERACTIVO (HOVER CARDS)
+           =========================================
+        */
+        .card:hover {
+            border-color: var(--nexus-cyan); /* Cambia el borde a color Cyan */
+            transform: translateY(-8px); /* Desplazamiento hacia arriba en 3D */
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 240, 255, 0.15); /* Brillo externo cyan */
+        }
+
+        /* Revela el degradado interno de fondo de la tarjeta */
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Cambia el color del icono y aumenta el tamaño */
+        .card:hover .card-icon {
+            color: var(--nexus-purple);
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 10px rgba(188, 19, 254, 0.5));
+        }
+
+        /* Resalta el título en Cyan */
+        .card:hover h2 {
+            color: var(--nexus-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Línea decorativa neón en la base que se expande del centro hacia afuera */
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--nexus-cyan), var(--nexus-purple));
+            transition: width 0.4s ease;
+            z-index: 3;
+        }
+        
+        /* Expande la línea decorativa al 100% de la tarjeta */
+        .card:hover::after {
+            width: 100%;
+        }
+        
+        /* 
+           =========================================
+           RESPONSIVIDAD (DISEÑO MÓVIL)
+           =========================================
+        */
         @media(max-width: 900px) {
-            .menu-grid { grid-template-columns: 1fr; }
+            .menu-grid { 
+                grid-template-columns: 1fr; /* Pasa de 3 columnas a 1 sola en pantallas pequeñas */
+                max-width: 450px;
+                gap: 20px;
+            }
+            body {
+                padding: 40px 20px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>NEXUS GAMING - ADMIN PANEL</h1>
-    
+    <!-- Header Principal con Logo apuntando a tu carpeta estática actual -->
+    <div class="brand-container">
+        <!-- Corregido a '/imagenes/logo_general .png' respetando exactamente el espacio en blanco del archivo real -->
+        <img th:src="@{'/imagenes/logo_general .png'}" alt="Nexus Gaming Logo" class="brand-logo">
+        <h1>Nexus Gaming</h1>
+        <div class="subtitle">Panel de Control</div>
+    </div>
+
+    <!-- Panel Grid de Accesos Rápidos -->
     <div class="menu-grid">
+        
+        <!-- Tarjeta 1: Gestión de Inventario / CRUD de hardware -->
         <a href="/productos" class="card">
+            <i class='bx bxs-component card-icon'></i>
             <h2>Administrar Productos</h2>
-            <p>Gestionar hardware y stock</p>
+            <p>Monitorear inventario, actualizar precios y gestionar el stock disponible.</p>
         </a>
         
+        <!-- Tarjeta 2: Gestión de ubicaciones físicas o almacenes (Nodos) -->
         <a href="/sedes" class="card">
+            <i class='bx bxs-map-pin card-icon'></i>
             <h2>Administrar Sedes (Nodos)</h2>
-            <p>Gestionar ubicaciones en el mapa</p>
+            <p>Gestionar las ubicaciones físicas de los almacenes y centros logísticos.</p>
         </a>
 
-        <!-- ¡Nueva tarjeta agregada para conectar rutas! -->
+        <!-- Tarjeta 3: Algoritmos de grafos, rutas y distancias físicas (Aristas) -->
         <a href="/tramos/nuevo" class="card">
+            <!-- Aplicamos una pequeña rotación en línea al icono para simular una conexión diagonal -->
+            <i class='bx bx-git-commit card-icon' style="transform: rotate(45deg);"></i>
             <h2>Conectar Rutas (Aristas)</h2>
-            <p>Enlazar sedes y medir distancias</p>
+            <p>Enlazar nodos, medir distancias físicas y optimizar rutas de entrega.</p>
         </a>
+        
     </div>
 
 </body>
