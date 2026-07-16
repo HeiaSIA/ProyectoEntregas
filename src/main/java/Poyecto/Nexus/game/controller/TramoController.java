@@ -1,18 +1,15 @@
 package Poyecto.Nexus.game.controller;
 
-import Poyecto.Nexus.game.entity.Sede;
 import Poyecto.Nexus.game.entity.Tramo;
-import Poyecto.Nexus.game.repository.SedeRepository;
 import Poyecto.Nexus.game.repository.TramoRepository;
+import Poyecto.Nexus.game.repository.SedeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/tramos")
@@ -24,30 +21,91 @@ public class TramoController {
     @Autowired
     private SedeRepository sedeRepository;
 
-    // Este método carga la página HTML y le envía los datos necesarios
-    @GetMapping("/nuevo")
-    public String mostrarFormularioTramo(Model model) {
-        // 1. Buscamos todas las sedes en la base de datos (Quito, Guayaquil, etc.)
-        List<Sede> listaSedes = sedeRepository.findAll();
-        
-        // 2. Enviamos la lista de sedes al HTML para llenar los <select>
-        model.addAttribute("listaSedes", listaSedes);
-        
-        // 3. Enviamos un objeto Tramo vacío para que el formulario lo llene
-        model.addAttribute("nuevoTramo", new Tramo());
-        
-        // Retorna el nombre de tu archivo HTML (Asegúrate de que se llame "nuevo-tramo.html")
-        return "nuevo_tramo"; 
+    // 1. Mostrar Panel Principal (Crear y Listar)
+    @GetMapping
+    public String listarTramos(Model model) {
+        if (!model.containsAttribute("nuevoTramo")) {
+            model.addAttribute("nuevoTramo", new Tramo());
+        }
+        model.addAttribute("listaSedes", sedeRepository.findAll());
+        model.addAttribute("listaTramos", tramoRepository.findAll());
+        return "nuevo_tramo";
     }
 
-    // Este método recibe los datos del formulario cuando le das a "Guardar Ruta"
+    // NEW ENDPOINT: Cargar mapa de conexiones y sedes fijas
+    @GetMapping("/mapa")
+    public String mostrarMapaRed(Model model) {
+        model.addAttribute("listaSedes", sedeRepository.findAll());
+        model.addAttribute("listaTramos", tramoRepository.findAll());
+        return "mapa_tramos"; // Retornará la nueva plantilla HTML
+    }
+
+    // 2. Guardar nuevo tramo
     @PostMapping("/guardar")
-    public String guardarTramo(@ModelAttribute("nuevoTramo") Tramo tramo) {
-        
-        // Guardamos la arista con su peso (distancia) en PostgreSQL
-        tramoRepository.save(tramo);
-        
-        // Redirigimos a la misma página limpia para que puedas agregar la siguiente ruta
-        return "redirect:/tramos/nuevo";
+    public String guardarTramo(@ModelAttribute("nuevoTramo") Tramo tramo, RedirectAttributes redirectAttributes) {
+        try {
+            boolean existe = tramoRepository.findAll().stream().anyMatch(t -> 
+                t.getSedeOrigen().getIdSede().equals(tramo.getSedeOrigen().getIdSede()) && 
+                t.getSedeDestino().getIdSede().equals(tramo.getSedeDestino().getIdSede())
+            );
+
+            if (existe) {
+                redirectAttributes.addFlashAttribute("mensajeError", "El tramo de ida en esta misma dirección ya está registrado.");
+                return "redirect:/tramos";
+            }
+
+            tramoRepository.save(tramo);
+            redirectAttributes.addFlashAttribute("mensajeExito", "¡Ruta guardada y conectada con éxito!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al procesar la ruta.");
+        }
+        return "redirect:/tramos";
+    }
+
+    // 3. Eliminar tramo
+    @GetMapping("/eliminar/{id}")
+    public String eliminarTramo(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        try {
+            tramoRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Tramo eliminado del sistema.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No se pudo eliminar el tramo seleccionado.");
+        }
+        return "redirect:/tramos";
+    }
+
+    // 4. Cargar formulario de edición como fragmento para el modal
+    @GetMapping("/editar/{id}")
+    public String editarTramo(@PathVariable("id") Long id, Model model) {
+        Optional<Tramo> tramoOpt = tramoRepository.findById(id);
+        if (tramoOpt.isPresent()) {
+            model.addAttribute("tramo", tramoOpt.get());
+            model.addAttribute("listaSedes", sedeRepository.findAll());
+            return "editar_tramo :: formEditar"; 
+        }
+        return "error";
+    }
+
+    // 5. Procesar la actualización del tramo
+    @PostMapping("/actualizar")
+    public String actualizarTramo(@ModelAttribute("tramo") Tramo tramo, RedirectAttributes redirectAttributes) {
+        try {
+            boolean existe = tramoRepository.findAll().stream().anyMatch(t -> 
+                !t.getIdTramo().equals(tramo.getIdTramo()) &&
+                t.getSedeOrigen().getIdSede().equals(tramo.getSedeOrigen().getIdSede()) && 
+                t.getSedeDestino().getIdSede().equals(tramo.getSedeDestino().getIdSede())
+            );
+
+            if (existe) {
+                redirectAttributes.addFlashAttribute("mensajeError", "Ya existe otro tramo con esa misma ruta.");
+                return "redirect:/tramos";
+            }
+
+            tramoRepository.save(tramo);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Tramo actualizado correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al intentar actualizar el tramo.");
+        }
+        return "redirect:/tramos";
     }
 }
