@@ -218,7 +218,7 @@
                 <button type="submit">Guardar Ruta en el Sistema</button>
                 
                 <!-- NUEVO BOTÓN AGREGADO -->
-                <a href="/tramos/mapa" class="btn-mostrar">🗺️ Mostrar Mapa de Red</a>
+                <a href="/tramos/mapa" class="btn-mostrar">Mostrar Mapa de Red</a>
             </form>
         </div>
 
@@ -252,12 +252,12 @@
                                 </td>
                                 <td>
                                     <button type="button" class="btn-accion btn-editar" th:onclick="'abrirModalEditar(' + ${tramo.idTramo} + ')'">
-                                        ✏️ Editar
+                                        Editar
                                     </button>
                                     <a th:href="@{/tramos/eliminar/{id}(id=${tramo.idTramo})}" 
                                        class="btn-accion btn-eliminar"
                                        onclick="return confirm('¿Estás seguro de que deseas eliminar este tramo de conexión?');">
-                                        🗑️ Eliminar
+                                        Eliminar
                                     </a>
                                 </td>
                             </tr>
