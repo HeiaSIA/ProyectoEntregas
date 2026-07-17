@@ -47,11 +47,23 @@
         >
         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-nexusCyan">🔍</span>
       </div>
-
-      <!-- Menú de Usuario / Carrito -->
+		<!-- Corriguiendo error de Inicio de sesion  -->
+     <!-- Menú de Usuario / Carrito -->
       <nav class="flex items-center gap-6 text-sm font-semibold">
-        <button onclick="abrirModal('modalRegistro')" class="hover:text-nexusPurple transition-colors cursor-pointer">Crear cuenta</button>
-        <button onclick="abrirModal('modalLogin')" class="hover:text-nexusCyan transition-colors cursor-pointer">Ingresar</button>
+        <!-- Opciones para usuarios invitados -->
+        <div id="menuInvitado" class="flex items-center gap-6">
+          <button onclick="abrirModal('modalRegistro')" class="hover:text-nexusPurple transition-colors cursor-pointer">Crear cuenta</button>
+          <button onclick="abrirModal('modalLogin')" class="hover:text-nexusCyan transition-colors cursor-pointer">Ingresar</button>
+        </div>
+
+        <!-- Opciones para usuario autenticado -->
+        <div id="menuUsuario" class="hidden flex items-center gap-4">
+          <span id="nombrePiloto" class="text-nexusCyan font-bold drop-shadow-[0_0_5px_rgba(0,240,255,0.3)]"></span>
+          <button onclick="cerrarSesion()" class="text-xs bg-nexusPurple/20 text-nexusPurple border border-nexusPurple/40 px-3 py-1.5 rounded-lg hover:bg-nexusPurple hover:text-white transition-all cursor-pointer">
+            Cerrar Sesión
+          </button>
+        </div>
+
         <a href="#" class="text-nexusPurple hover:underline transition-all">Mis compras</a>
         <button class="relative p-1">
           <span class="text-xl">🛒</span>
@@ -185,7 +197,8 @@
           <h3 class="font-bold text-white mb-2">Lo Más Vendido</h3>
           <p class="text-xs text-gray-400 leading-relaxed">Explora el hardware más demandado por la comunidad.</p>
         </div>
-        <button class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20">
+        <!-- Rediriguiendo a catalogo -->
+        <button onclick="window.location.href='/catalogo'" class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20">
           Ver catálogo
         </button>
       </div>
@@ -311,7 +324,30 @@
       </form>
     </div>
   </div>
+<!-- MODAL DE ACCESO ADMINISTRATIVO -->
+  <div id="modalAdmin" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-nexusCard rounded-xl border border-red-500/50 p-8 shadow-[0_0_30px_rgba(255,0,0,0.2)] max-w-sm w-full mx-4 relative transform scale-95 transition-transform duration-300">
+      
+      <button onclick="cerrarModal('modalAdmin')" class="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+      
+      <div class="text-center mb-6">
+        <h3 class="text-red-500 font-black text-xl tracking-widest drop-shadow-[0_0_8px_rgba(255,0,0,0.5)]">SISTEMA NEXUS</h3>
+        <p class="text-xs text-gray-400 mt-1 uppercase">Credenciales de Administrador requeridas</p>
+      </div>
 
+      <!-- El formulario viaja a la ruta POST que creamos en Java -->
+      <form action="/admin/acceso" method="POST" class="space-y-4">
+        <div>
+          <input type="password" name="clave" placeholder="••••••••" required
+                 class="w-full bg-nexusDark text-red-400 text-center text-xl tracking-[0.5em] px-4 py-3 rounded-lg border border-red-500/30 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition-all duration-300">
+        </div>
+        <button type="submit" class="w-full bg-red-600/80 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition-colors cursor-pointer tracking-widest shadow-lg">
+          AUTORIZAR
+        </button>
+      </form>
+
+    </div>
+  </div> 
 
   <!-- ================= 4. JAVASCRIPT DE ANIMACIONES Y PETICIONES ================= -->
   <script>
@@ -410,8 +446,8 @@
     }
 
     // 2. Inicio de Sesión apuntando al puerto local 8080
-// Reemplaza únicamente tu función enviarLogin por esta:
-    function enviarLogin(event) {
+  // Corriguiendo Error de que al iniciar sesion te lleve directo a catalogo
+   function enviarLogin(event) {
       event.preventDefault();
 
       const email = document.getElementById('loginEmail').value;
@@ -434,7 +470,6 @@
         });
       })
       .then(data => {
-        // 1. Guardar el nombre en el navegador temporalmente
         localStorage.setItem('usuario_nombre', data.nombre);
         
         msgArea.textContent = "¡Bienvenido de vuelta, " + data.nombre + "!";
@@ -442,11 +477,12 @@
         msgArea.classList.remove('hidden');
         document.getElementById('formLogin').reset();
 
-        // 2. Redirigir al catálogo tras 1.5 segundos
+        // Actualiza el navbar de inmediato sin moverte de la página
+        actualizarInterfazUsuario(data.nombre);
+
         setTimeout(() => {
           msgArea.classList.add('hidden');
           cerrarModal('modalLogin');
-          window.location.href = '/catalogo'; // <--- REDIRECCIÓN AL NUEVO HTML
         }, 1500);
       })
       .catch(error => {
@@ -455,7 +491,31 @@
         msgArea.classList.remove('hidden');
       });
     }
-  </script>
 
+    function actualizarInterfazUsuario(nombre) {
+      if (nombre) {
+        document.getElementById('menuInvitado').classList.add('hidden');
+        document.getElementById('menuUsuario').classList.remove('hidden');
+        document.getElementById('nombrePiloto').textContent = "Piloto: " + nombre;
+      } else {
+        document.getElementById('menuInvitado').classList.remove('hidden');
+        document.getElementById('menuUsuario').classList.add('hidden');
+      }
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem('usuario_nombre');
+      actualizarInterfazUsuario(null);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const usuarioGuardado = localStorage.getItem('usuario_nombre');
+      actualizarInterfazUsuario(usuarioGuardado);
+    });
+  </script>
+<!-- Botón discreto que ahora abre el Modal de Seguridad -->
+  <button onclick="abrirModal('modalAdmin')" class="fixed bottom-3 right-3 text-[11px] text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition-all duration-300 z-50 cursor-pointer">
+    Admin
+  </button>
 </body>
 </html>
