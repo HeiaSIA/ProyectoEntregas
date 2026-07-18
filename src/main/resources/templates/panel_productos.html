@@ -250,6 +250,58 @@
             width: 50%;
             font-size: 14px;
         }
+        
+        /* Contenedor de visibilidad neón */
+        .visibilidad-container {
+            border: 1px dashed rgba(188, 19, 254, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-bottom: 0;
+            cursor: pointer;
+            accent-color: var(--nexus-purple);
+        }
+
+        .checkbox-group label {
+            display: inline;
+            margin-bottom: 0;
+            color: var(--nexus-text);
+            cursor: pointer;
+            text-transform: none;
+            font-size: 14px;
+            letter-spacing: normal;
+        }
+
+        /* Badges de Visibilidad */
+        .badge-visibilidad {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .vis-si {
+            background-color: rgba(0, 240, 255, 0.1);
+            color: var(--nexus-cyan);
+            border: 1px solid var(--nexus-cyan);
+        }
+        .vis-no {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--nexus-text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 
 </head>
@@ -309,6 +361,39 @@
                 th:field="*{stock}"
                 placeholder="Ej: 15"
                 required>
+         <!-- NUEVO CAMPO: Categoría del Componente -->
+        <label>Categoría del Componente:</label>
+        <select th:field="*{categoriaComponente}" required>
+            <option th:each="cat : ${T(Poyecto.Nexus.game.entity.CategoriaComponente).values()}"
+                    th:value="${cat}" 
+                    th:text="${cat}">
+            </option>
+        </select>
+
+        <!-- NUEVO CAMPO: Garantía Editable -->
+        <label>Tiempo de Garantía:</label>
+        <input
+                type="text"
+                th:field="*{garantia}"
+                placeholder="Ej: 12 meses, 2 años de fábrica"
+                required>
+
+       
+
+        <!-- NUEVO APARTADO: Enviar a Catálogo o Armar PC -->
+        <div class="visibilidad-container">
+            <label style="color: var(--nexus-purple); margin-bottom: 12px;">📍 Destinos de Publicación</label>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="disponibleCatalogo" th:field="*{disponibleCatalogo}">
+                <label for="disponibleCatalogo">Mostrar este producto en el Catálogo General</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="disponibleArmarPc" th:field="*{disponibleArmarPc}">
+                <label for="disponibleArmarPc">Habilitar pieza en el asistente "Armar tu PC"</label>
+            </div>
+        </div>
 
         <label>Imagen del producto:</label>
         <!-- No es requerida en edición para evitar obligar al usuario a subirla de nuevo -->
@@ -347,8 +432,12 @@
         <th>Nombre</th>
         <th>Descripción</th>
         <th>Precio</th>
-        <th>Stock</th> <!-- NUEVA COLUMNA -->
+        <th>Stock</th> 
+        <th>Garantía</th>
+        <th>Catálogo</th>
+        <th>Armar PC</th>
         <th>Acciones</th>
+        
     </tr>
     </thead>
 
@@ -383,6 +472,18 @@
             
             <!-- Si es 0 o nulo (Agotado) -->
             <span th:if="${prod.stock == 0 or prod.stock == null}" class="badge-stock sin-stock">Agotado</span>
+        </td>
+        
+        <td th:text="${prod.garantia}" style="font-weight: 500;"></td>
+
+        <td>
+            <span th:if="${prod.disponibleCatalogo}" class="badge-visibilidad vis-si">Sí</span>
+            <span th:unless="${prod.disponibleCatalogo}" class="badge-visibilidad vis-no">No</span>
+        </td>
+
+        <td>
+            <span th:if="${prod.disponibleArmarPc}" class="badge-visibilidad vis-si">Sí</span>
+            <span th:unless="${prod.disponibleArmarPc}" class="badge-visibilidad vis-no">No</span>
         </td>
 
         <!-- Columna de Botones de Acción (Editar / Eliminar con Boxicons) -->

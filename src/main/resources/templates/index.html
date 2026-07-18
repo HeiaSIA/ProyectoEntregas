@@ -99,7 +99,7 @@
         <div class="absolute inset-0 bg-gradient-to-t from-nexusDark via-nexusDark/40 to-transparent"></div>
         <div class="absolute bottom-8 left-8 md:left-16 max-w-lg z-10">
           <span class="bg-nexusCyan text-nexusDark text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Logística Nexus</span>
-          <h2 class="text-2xl md:text-4xl font-extrabold text-white mt-3 drop-shadow">NEXUS LLEGA DONDE ESTÁS TU JUEGO</h2>
+          <h2 class="text-2xl md:text-4xl font-extrabold text-white mt-3 drop-shadow">NEXUS LLEGA A DONDE TE ENCUENTRES</h2>
           <p class="text-gray-300 text-sm mt-2">Envíos ultra rápidos y 100% asegurados a todo el país.</p>
         </div>
       </div>
@@ -135,12 +135,13 @@
         TODO EL PODER PARA TU SETUP
       </h1>
       <p class="text-nexusCyan font-medium text-sm md:text-base tracking-wide uppercase">
-        Envíos ultra rápidos a nivel nacional
+        Envíos ultra rápidos a nivel nacional -- Proximaménte nivel MUNDIAL
       </p>
     </div>
 
-    <!-- Grid de 6 Columnas ajustable -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+    <!-- Grid de 4 Columnas ajustable -->
+    <!-- Eliminando opcciones inecesarias -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       
       <!-- Tarjeta 1 - Mi Cuenta -->
       <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
@@ -154,65 +155,40 @@
         </button>
       </div>
 
-      <!-- Tarjeta 2 - Envíos Rápidos -->
-      <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
-        <div>
-          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🚚</div>
-          <h3 class="font-bold text-white mb-2">Envíos Rápidos</h3>
-          <p class="text-xs text-gray-400 leading-relaxed">Rastrea tu pedido de componentes en tiempo real.</p>
-        </div>
-        <button class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
-          Seguir envío
-        </button>
-      </div>
-
-      <!-- Tarjeta 3 - Pagos Seguros -->
-      <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
-        <div>
-          <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">💳</div>
-          <h3 class="font-bold text-white mb-2">Pagos Seguros</h3>
-          <p class="text-xs text-gray-400 leading-relaxed">Paga con tarjetas de crédito, débito o cripto.</p>
-        </div>
-        <button class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20">
-          Ver métodos
-        </button>
-      </div>
-
-      <!-- Tarjeta 4 - Garantía Nexus -->
+      <!-- Tarjeta 2 - Garantía Nexus -->
       <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
         <div>
           <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🛡️</div>
           <h3 class="font-bold text-white mb-2">Garantía Nexus</h3>
           <p class="text-xs text-gray-400 leading-relaxed">Todos tus componentes cuentan con garantía directa de fábrica.</p>
         </div>
-        <button class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
-          Ver póliza
-        </button>
+       <button type="button" onclick="window.location.href='/productos/poliza'" class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
+    		Ver póliza
+		</button>
       </div>
 
-      <!-- Tarjeta 5 - Lo Más Vendido -->
+      <!-- Tarjeta 3 - Lo Más Vendido -->
       <div class="bg-nexusCard border border-nexusPurple/20 hover:border-nexusPurple rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(188,19,254,0.15)] group">
         <div>
           <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🔥</div>
           <h3 class="font-bold text-white mb-2">Lo Más Vendido</h3>
           <p class="text-xs text-gray-400 leading-relaxed">Explora el hardware más demandado por la comunidad.</p>
         </div>
-        <!-- Rediriguiendo a catalogo -->
-        <button onclick="window.location.href='/catalogo'" class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20">
+        <button onclick="if(localStorage.getItem('usuario_nombre')){ window.location.href='/catalogo' } else { abrirModal('modalLogin') }" class="mt-4 w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2 border border-nexusPurple/30 rounded-lg group-hover:bg-nexusPurple/20 cursor-pointer">
           Ver catálogo
         </button>
       </div>
 
-      <!-- Tarjeta 6 - Arma tu PC -->
+      <!-- Tarjeta 4 - Arma tu PC -->
       <div class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
         <div>
           <div class="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">🛠️</div>
           <h3 class="font-bold text-white mb-2">Arma tu PC</h3>
           <p class="text-xs text-gray-400 leading-relaxed">Usa nuestro configurador y asegura compatibilidad.</p>
         </div>
-        <button class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
-          Iniciar Setup
-        </button>
+        <button type="button" onclick="window.location.href='/armar-pc'" class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
+  			Iniciar Setup
+		</button>
       </div>
 
     </div>

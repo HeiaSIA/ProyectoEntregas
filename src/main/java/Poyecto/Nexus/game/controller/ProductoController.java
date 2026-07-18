@@ -1,6 +1,7 @@
 package Poyecto.Nexus.game.controller;
 
 import Poyecto.Nexus.game.entity.Producto;
+import Poyecto.Nexus.game.service.ProductoService; 
 import Poyecto.Nexus.game.repository.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -20,6 +22,9 @@ public class ProductoController {
 
     @Autowired
     private ProductoRepository productoRepository;
+    
+    @Autowired
+    private ProductoService productoService;
 
     private final String RUTA_IMAGENES = "src/main/resources/static/imagenes/";
 
@@ -28,6 +33,19 @@ public class ProductoController {
         model.addAttribute("nuevoProducto", new Producto());
         model.addAttribute("listaProductos", productoRepository.findAll());
         return "panel_productos";
+    }
+    
+    @GetMapping("/poliza")
+    public String verPolizaGarantia(Model model) {
+        // Listamos todos los productos
+        List<Producto> lista = productoService.listarTodos();
+        model.addAttribute("listaProductos", lista);
+        return "ver_poliza"; 
+    }
+    @GetMapping("/catalogo")
+    public String mostrarCatalogo(Model model) {
+        model.addAttribute("listaProductos", productoService.obtenerCatalogoTienda());
+        return "catalogo";
     }
 
     @GetMapping("/editar/{id}")
