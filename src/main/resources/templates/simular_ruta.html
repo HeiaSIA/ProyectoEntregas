@@ -9,96 +9,66 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
-        body { background:#f4f6f9; min-height:100vh; padding:20px; }
-        
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 20px;
-            height: calc(100vh - 40px);
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+    :root {
+        --nexus-dark: #0b0c10;
+        --nexus-card: #1f2833;
+        --nexus-purple: #8a2be2;
+        --nexus-cyan: #00f0ff;
+        --nexus-text: #c5c6c7;
+        --nexus-white: #ffffff;
+    }
 
-        .card { background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); display: flex; flex-direction: column; }
-        .header { background:#2563eb; color:white; padding:25px; }
-        .header h1 { font-size:24px; margin-bottom:5px; }
-        .header p { opacity: 0.9; font-size: 14px; }
-        
-        form { padding:25px; display:flex; flex-direction:column; }
-        label { margin-bottom:8px; color:#374151; font-weight:600; }
-        select { padding:12px; border:1px solid #d1d5db; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
-        select:focus { border-color:#2563eb; }
-        
-        /* Contenedor de Píldoras Interactivas */
-        .destinos-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 10px;
-            background: #fafafa;
-        }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+    body { background: var(--nexus-dark); min-height:100vh; padding:20px; color: var(--nexus-text); }
+    
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 20px;
+        height: calc(100vh - 40px);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
 
-        .destino-pill {
-            background: white;
-            border: 1px solid #d1d5db;
-            padding: 8px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            color: #4b5563;
-            transition: all 0.2s ease;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+    .card { background: var(--nexus-card); border-radius:18px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,.5); border: 1px solid #45a29e; display: flex; flex-direction: column; }
+    .header { background: linear-gradient(90deg, var(--nexus-purple), var(--nexus-cyan)); color: white; padding:25px; }
+    .header h1 { font-size:24px; margin-bottom:5px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    
+    form { padding:25px; display:flex; flex-direction:column; }
+    label { margin-bottom:8px; color: var(--nexus-white); font-weight:600; }
+    select { padding:12px; background: #0b0c10; color: white; border:1px solid #45a29e; border-radius:10px; margin-bottom:20px; outline:none; }
+    select:focus { border-color: var(--nexus-cyan); }
+    
+    .destinos-grid {
+        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; max-height: 200px; overflow-y: auto;
+        padding: 10px; border: 1px solid var(--nexus-purple); border-radius: 10px; background: #0b0c10;
+    }
 
-        .destino-pill:hover:not(.disabled) {
-            border-color: #2563eb;
-            color: #2563eb;
-            background: #f0f6ff;
-        }
+    .destino-pill {
+        background: #1f2833; border: 1px solid var(--nexus-purple); padding: 8px 14px;
+        border-radius: 20px; cursor: pointer; font-size: 14px; color: var(--nexus-text); transition: .3s;
+    }
+    .destino-pill:hover:not(.disabled) { border-color: var(--nexus-cyan); color: var(--nexus-cyan); }
+    .destino-pill.active { background: var(--nexus-purple); border-color: var(--nexus-purple); color: white; }
+    .destino-pill.disabled { background: #161920; border-color: #333; color: #555; cursor: not-allowed; }
 
-        .destino-pill.active {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: white;
-        }
+    button { 
+        background: transparent; color: var(--nexus-white); border: 2px solid var(--nexus-purple);
+        padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: .3s;
+    }
+    button:hover { background: var(--nexus-purple); box-shadow: 0 0 15px var(--nexus-purple); }
+    
+    .resultados { padding: 25px; border-top: 1px solid var(--nexus-purple); overflow-y: auto; flex-grow: 1; }
+    .nodo-item { background: #0b0c10; padding: 10px; border-left: 4px solid var(--nexus-cyan); border-radius: 4px; font-size: 14px; font-weight: 600; color: var(--nexus-white); margin-bottom: 8px; }
+    .distancia-resumen { font-size: 18px; font-weight: bold; color: var(--nexus-cyan); margin-top: 15px; }
+    .no-ruta { color: #ff5555; font-weight: bold; }
 
-        .destino-pill.disabled {
-            background: #e5e7eb;
-            border-color: #d1d5db;
-            color: #9ca3af;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        button { background:#2563eb; color:white; border:none; padding:15px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; }
-        button:hover { background:#1d4ed8; }
-        
-        .resultados { padding: 25px; border-top: 1px solid #e5e7eb; overflow-y: auto; flex-grow: 1; }
-        .ruta-nodos { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .nodo-item { background: #eff6ff; padding: 10px; border-left: 4px solid #2563eb; border-radius: 4px; font-size: 14px; font-weight: 600; }
-        .distancia-resumen { font-size: 18px; font-weight: bold; color: #10b981; margin-top: 15px; }
-        .no-ruta { color: #ef4444; font-weight: bold; font-size: 14px; }
-
-        #mapa-simulacion {
-            width: 100%;
-            height: 100%;
-            border-radius: 18px;
-            box-shadow: 0 15px 40px rgba(0,0,0,.08);
-            border: 2px solid #e5e7eb;
-            z-index: 1;
-        }
-    </style>
+    #mapa-simulacion {
+        width: 100%; height: 100%; border-radius: 18px; border: 1px solid var(--nexus-purple);
+        box-shadow: 0 0 20px rgba(138, 43, 226, 0.2); z-index: 1;
+    }
+</style>
 </head>
 <body>
 

@@ -3,15 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Fragmento de Edición</title>
+    <style>
+        /* Estilos específicos para el formulario dentro del modal */
+        #formEditarContainer form { padding: 0; display: flex; flex-direction: column; }
+        
+        #formEditarContainer label { 
+            margin-bottom: 8px; color: var(--nexus-white); font-weight: 600; font-size: 14px; 
+        }
+        
+        #formEditarContainer select, 
+        #formEditarContainer input { 
+            padding: 12px; background: #0b0c10; color: white; 
+            border: 1px solid var(--nexus-purple); border-radius: 10px; 
+            margin-bottom: 20px; font-size: 15px; outline: none; width: 100%;
+        }
+        
+        #formEditarContainer input[readonly] { 
+            color: var(--nexus-cyan); font-weight: bold; cursor: not-allowed; 
+        }
+
+        .info-calculo { 
+            font-size: 13px; color: var(--nexus-cyan); 
+            margin-top: -15px; margin-bottom: 20px; font-style: italic; 
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Este bloque se extraerá entero y se meterá dentro del modal de nuevo_tramo.html -->
     <div th:fragment="formEditar" id="formEditarContainer">
         
         <form th:action="@{/tramos/actualizar}" th:object="${tramo}" method="post">
             
-            <!-- Campo oculto para asegurar que Spring Boot sepa qué ID actualizar -->
             <input type="hidden" th:field="*{idTramo}">
 
             <label>Sede de Origen</label>
@@ -34,7 +56,7 @@
 
             <label>Distancia Calculada (Km)</label>
             <input type="number" step="any" th:field="*{distanciaKm}" id="editDistancia" readonly required>
-            <div class="info-calculo" id="edit-estado-calculo" style="color: #2563eb;">Calculando coordenadas...</div>
+            <div class="info-calculo" id="edit-estado-calculo">Calculando ruta...</div>
 
             <div class="modal-btn-group">
                 <button type="button" class="btn-modal-cancelar" onclick="cerrarModal()">Cancelar</button>
@@ -42,8 +64,8 @@
             </div>
         </form>
 
-        <!-- Script interno que auto-recalcula la distancia del tramo cargado -->
         <script>
+            // Asegúrate de que esta función esté disponible en tu JS principal o aquí mismo
             calcularDistanciaEdit();
         </script>
     </div>
