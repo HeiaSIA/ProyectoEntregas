@@ -19,54 +19,111 @@
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
-    body { background: var(--nexus-dark); min-height:100vh; padding:20px; color: var(--nexus-text); }
+    body { background: var(--nexus-dark); min-height:100vh; padding:20px; color: var(--nexus-text); overflow: hidden; }
     
     .dashboard-container {
         display: grid;
-        grid-template-columns: 400px 1fr;
+        grid-template-columns: 420px 1fr;
         gap: 20px;
         height: calc(100vh - 40px);
-        max-width: 1400px;
+        max-width: 1500px;
         margin: 0 auto;
     }
 
-    .card { background: var(--nexus-card); border-radius:18px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,.5); border: 1px solid #45a29e; display: flex; flex-direction: column; }
-    .header { background: linear-gradient(90deg, var(--nexus-purple), var(--nexus-cyan)); color: white; padding:25px; }
-    .header h1 { font-size:24px; margin-bottom:5px; }
+    .card { 
+        background: var(--nexus-card); 
+        border-radius:18px; 
+        box-shadow:0 0 20px rgba(0,0,0,.5); 
+        border: 1px solid #45a29e; 
+        display: flex; 
+        flex-direction: column; 
+        height: 100%; 
+        overflow: hidden; 
+    }
+    
+    .header { background: linear-gradient(90deg, var(--nexus-purple), var(--nexus-cyan)); color: white; padding:20px 25px; flex-shrink: 0; }
+    .header h1 { font-size:24px; margin-bottom:5px; font-weight: 800; }
     .header p { opacity: 0.9; font-size: 14px; }
     
-    form { padding:25px; display:flex; flex-direction:column; }
-    label { margin-bottom:8px; color: var(--nexus-white); font-weight:600; }
-    select { padding:12px; background: #0b0c10; color: white; border:1px solid #45a29e; border-radius:10px; margin-bottom:20px; outline:none; }
+    form { padding:20px 25px; display:flex; flex-direction:column; flex-shrink: 0; }
+    label { margin-bottom:8px; color: var(--nexus-white); font-weight:600; font-size: 14px; }
+    select { padding:10px; background: #0b0c10; color: white; border:1px solid #45a29e; border-radius:10px; margin-bottom:15px; outline:none; }
     select:focus { border-color: var(--nexus-cyan); }
     
-    .destinos-grid {
-        display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; max-height: 200px; overflow-y: auto;
-        padding: 10px; border: 1px solid var(--nexus-purple); border-radius: 10px; background: #0b0c10;
+    /* SCROLL 1: Lista compacta de selección de encomiendas */
+    .encomiendas-grid {
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        margin-bottom: 15px; 
+        max-height: 170px; 
+        overflow-y: auto;  
+        padding: 10px; 
+        border: 1px solid var(--nexus-purple); 
+        border-radius: 10px; 
+        background: #0b0c10;
     }
 
-    .destino-pill {
-        background: #1f2833; border: 1px solid var(--nexus-purple); padding: 8px 14px;
-        border-radius: 20px; cursor: pointer; font-size: 14px; color: var(--nexus-text); transition: .3s;
+    .encomienda-pill {
+        background: #1f2833; border: 1px solid #45a29e; padding: 10px 14px;
+        border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--nexus-text); transition: .3s;
+        display: flex; flex-direction: column; gap: 4px;
     }
-    .destino-pill:hover:not(.disabled) { border-color: var(--nexus-cyan); color: var(--nexus-cyan); }
-    .destino-pill.active { background: var(--nexus-purple); border-color: var(--nexus-purple); color: white; }
-    .destino-pill.disabled { background: #161920; border-color: #333; color: #555; cursor: not-allowed; }
+    .encomienda-pill:hover { border-color: var(--nexus-cyan); }
+    .encomienda-pill.active { background: rgba(138, 43, 226, 0.2); border-color: var(--nexus-purple); }
+
+    .encomienda-trayecto { font-weight: bold; color: var(--nexus-white); font-size: 14px; }
+    .encomienda-info { font-size: 11px; color: #45a29e; display: flex; justify-content: space-between; }
 
     button { 
         background: transparent; color: var(--nexus-white); border: 2px solid var(--nexus-purple);
-        padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: .3s;
+        padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: .3s;
     }
     button:hover { background: var(--nexus-purple); box-shadow: 0 0 15px var(--nexus-purple); }
     
-    .resultados { padding: 25px; border-top: 1px solid var(--nexus-purple); overflow-y: auto; flex-grow: 1; }
+    /* SCROLL 2: Solución definitiva para la Hoja de Ruta Generada */
+    .resultados { 
+        padding: 20px 25px; 
+        border-top: 1px solid var(--nexus-purple); 
+        background: #161920; 
+        flex: 1;             
+        min-height: 0;       
+        overflow-y: auto;   
+    }
+    
     .nodo-item { background: #0b0c10; padding: 10px; border-left: 4px solid var(--nexus-cyan); border-radius: 4px; font-size: 14px; font-weight: 600; color: var(--nexus-white); margin-bottom: 8px; }
-    .distancia-resumen { font-size: 18px; font-weight: bold; color: var(--nexus-cyan); margin-top: 15px; }
+    .distancia-resumen { font-size: 16px; font-weight: bold; color: var(--nexus-cyan); margin-top: 12px; }
     .no-ruta { color: #ff5555; font-weight: bold; }
 
     #mapa-simulacion {
         width: 100%; height: 100%; border-radius: 18px; border: 1px solid var(--nexus-purple);
         box-shadow: 0 0 20px rgba(138, 43, 226, 0.2); z-index: 1;
+    }
+
+    /* Scrollbars del futuro Cyberpunk */
+    .encomiendas-grid::-webkit-scrollbar,
+    .resultados::-webkit-scrollbar {
+        width: 6px;
+    }
+    .encomiendas-grid::-webkit-scrollbar-track,
+    .resultados::-webkit-scrollbar-track {
+        background: #0b0c10;
+    }
+    .encomiendas-grid::-webkit-scrollbar-thumb,
+    .resultados::-webkit-scrollbar-thumb {
+        background: var(--nexus-purple);
+        border-radius: 10px;
+    }
+    .encomiendas-grid::-webkit-scrollbar-thumb:hover,
+    .resultados::-webkit-scrollbar-thumb:hover {
+        background: var(--nexus-cyan);
+    }
+
+    /* Estilos para los marcadores nativos sin imágenes */
+    .nodo-mapa {
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px currentColor;
     }
 </style>
 </head>
@@ -76,12 +133,12 @@
     
     <div class="card">
         <div class="header">
-            <h1>Simular Envío</h1>
-            <p>Calcula la ruta óptima de entregas.</p>
+            <h1>Consolidar Carga</h1>
+            <p>Calcula la ruta óptima uniendo encomiendas activas.</p>
         </div>
 
-        <form action="/simular/calcular" method="post" onsubmit="return validarFormulario();">
-            <label>Sede Origen</label>
+        <form th:action="@{/simular/calcular}" method="post" onsubmit="return validarFormulario();">
+            <label>Punto de Partida del Camión</label>
             <select name="origenId" id="origenSelect" required>
                 <option value="">Selecciona origen...</option>
                 <option th:each="sede : ${listaSedes}" 
@@ -90,31 +147,39 @@
                         th:selected="${sede.idSede == origenId}"></option>
             </select>
 
-            <label>Sedes de Destino (Toca para agregar)</label>
+            <label>Seleccionar Encomiendas para el Viaje</label>
             
-            <!-- Selector múltiple oculto pero enlazado con Thymeleaf/Spring -->
-            <select id="destinosSelectHidden" name="destinosId" multiple style="display: none;" required>
-                <option th:each="sede : ${listaSedes}" 
-                        th:value="${sede.idSede}" 
-                        th:text="${sede.nombreCiudad}"></option>
+            <select id="encomiendasSelectHidden" name="encomiendasIds" multiple style="display: none;" required>
+                <option th:each="enc : ${listaEncomiendas}" 
+                        th:value="${enc.idEncomienda}" 
+                        th:text="'Encomienda #' + ${enc.idEncomienda}"></option>
             </select>
 
-            <!-- Interfaz visual moderna para seleccionar ciudades con un clic -->
-            <div class="destinos-grid">
-                <div th:each="sede : ${listaSedes}" 
-                     th:data-id="${sede.idSede}"
-                     class="destino-pill"
-                     onclick="toggleDestino(this)">
-                    <span class="icon">+</span>
-                    <span th:text="${sede.nombreCiudad}"></span>
+            <!-- CONTENEDOR DE SELECCIÓN (SCROLL 1) -->
+            <div class="encomiendas-grid">
+                <div th:each="enc : ${listaEncomiendas}" 
+                     th:data-id="${enc.idEncomienda}"
+                     class="encomienda-pill"
+                     onclick="toggleEncomienda(this)">
+                    <div class="encomienda-trayecto">
+                        📦 <span th:text="${enc.sedeOrigen.nombreCiudad} + ' ➔ ' + ${enc.getSedeDestino().getNombreCiudad()}"></span>
+                    </div>
+                    <div class="encomienda-info">
+                        <span th:text="'Guía: #NX-00' + ${enc.idEncomienda}"></span>
+                        <span th:text="${enc.estado}" style="color: var(--nexus-cyan); font-weight: bold;"></span>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(listaEncomiendas)}" style="padding: 10px; text-align: center; color: #ff5555; font-size: 13px;">
+                    No hay encomiendas registradas en el sistema.
                 </div>
             </div>
 
             <button type="submit">Calcular Ruta de Entregas</button>
         </form>
 
+        <!-- DIV DE ABAJO TOTALMENTE ARREGLADO CON SCROLL INTERNO (SCROLL 2) -->
         <div class="resultados" th:if="${rutaOptima != null}">
-            <h3 style="color:#1e293b; margin-bottom: 10px;">Hoja de Ruta (Orden de Visita)</h3>
+            <h3 style="color: var(--nexus-white); margin-bottom: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Hoja de Ruta Generada</h3>
             
             <div th:if="${not #lists.isEmpty(rutaOptima)}">
                 <div class="ruta-nodos">
@@ -122,101 +187,78 @@
                         <span th:text="${iter.count} + '. ' + ${sede.nombreCiudad}"></span>
                     </div>
                 </div>
-                <div class="distancia-resumen" th:text="'Distancia total: ' + ${distanciaTotal} + ' km'"></div>
+                <div class="distancia-resumen">
+    				<span th:text="'Distancia total del circuito: ' + ${distanciaTotal} + ' km'"></span>
+				    <span style="color: var(--nexus-purple); font-size: 14px; margin-left: 8px;" 
+       			   th:text="'(Aprox. ' + ${#numbers.formatDecimal(distanciaTotal / 60.0, 1, 1)} + ' hrs)'">
+   					 </span>
+				</div>
             </div>
 
             <div th:if="${#lists.isEmpty(rutaOptima)}">
-                <p class="no-ruta">❌ No fue posible conectar todos los puntos con los tramos actuales.</p>
+                <p class="no-ruta">❌ No fue posible conectar todos los almacenes de entrega con los tramos viales actuales.</p>
             </div>
         </div>
     </div>
 
+    <!-- Contenedor del Mapa Leaflet -->
     <div id="mapa-simulacion"></div>
 </div>
 
 <script th:inline="javascript">
 /*<![CDATA[*/
 
-    // ELEMENTOS DEL DOM PARA LAS PÍLDORAS
-    const origenSelect = document.getElementById('origenSelect');
-    const hiddenSelect = document.getElementById('destinosSelectHidden');
-    const pills = document.querySelectorAll('.destino-pill');
+    const hiddenSelect = document.getElementById('encomiendasSelectHidden');
 
-    // Función para añadir/remover sedes de entrega al hacer un simple clic
-    function toggleDestino(pill) {
-        if (pill.classList.contains('disabled')) return;
-
+    function toggleEncomienda(pill) {
         const id = pill.getAttribute('data-id');
         const option = hiddenSelect.querySelector(`option[value="${id}"]`);
         
         if (pill.classList.contains('active')) {
-            // Deseleccionar sede
             pill.classList.remove('active');
-            pill.querySelector('.icon').textContent = '+';
             if (option) option.selected = false;
         } else {
-            // Seleccionar sede
             pill.classList.add('active');
-            pill.querySelector('.icon').textContent = '✓';
             if (option) option.selected = true;
         }
     }
 
-    // Evita que la ciudad de origen sea elegible como destino
-    function actualizarRestricciones() {
-        const origenIdSelected = origenSelect.value;
-        
-        pills.forEach(pill => {
-            const id = pill.getAttribute('data-id');
-            if (id === origenIdSelected) {
-                // Si estaba seleccionada, la limpiamos
-                if (pill.classList.contains('active')) {
-                    pill.classList.remove('active');
-                    pill.querySelector('.icon').textContent = '+';
-                    const option = hiddenSelect.querySelector(`option[value="${id}"]`);
-                    if (option) option.selected = false;
-                }
-                pill.classList.add('disabled');
-            } else {
-                pill.classList.remove('disabled');
-            }
-        });
-    }
-
-    // Validación antes de enviar el formulario
     function validarFormulario() {
         const selectedCount = Array.from(hiddenSelect.options).filter(opt => opt.selected).length;
         if (selectedCount === 0) {
-            alert("Por favor, selecciona al menos una sede de destino haciendo clic en las píldoras.");
+            alert("Por favor, selecciona al menos una encomienda haciendo clic sobre las tarjetas.");
             return false;
         }
         return true;
     }
 
-    origenSelect.addEventListener('change', actualizarRestricciones);
-
-    // INICIALIZACIÓN
     document.addEventListener('DOMContentLoaded', () => {
-        // Recuperar del backend las sedes previamente seleccionadas tras el reload
-        const preSelectedIds = /*[[${destinosId}]]*/ [];
+        const preSelectedIds = /*[[${encomiendasIds}]]*/ [];
         if (preSelectedIds && preSelectedIds.length > 0) {
             preSelectedIds.forEach(id => {
-                const pill = document.querySelector(`.destino-pill[data-id="${id}"]`);
+                const pill = document.querySelector(`.encomienda-pill[data-id="${id}"]`);
                 if (pill) {
                     pill.classList.add('active');
-                    pill.querySelector('.icon').textContent = '✓';
                     const option = hiddenSelect.querySelector(`option[value="${id}"]`);
                     if (option) option.selected = true;
                 }
             });
         }
-        actualizarRestricciones();
     });
 
+    // ==========================================
+    //    MOTOR GRÁFICO LEAFLET CON RED COMPLETA
+    // ==========================================
+    const todasLasSedes = [];
+    /*[# th:each="s : ${listaSedes}"]*/
+    todasLasSedes.push({
+        nombre: /*[[${s.nombreCiudad}]]*/ '',
+        lat: /*[[${s.latitud}]]*/ 0,
+        lng: /*[[${s.longitud}]]*/ 0
+    });
+    /*[/]*/
 
-    // --- LÓGICA ORIGINAL DE LEAFLET MAPS ---
     const puntosRuta = [];
-    
     /*[# th:each="sede : ${rutaOptima}"]*/
     puntosRuta.push({
         nombre: /*[[${sede.nombreCiudad}]]*/ '',
@@ -225,18 +267,41 @@
     });
     /*[/]*/
 
-    const mapa = L.map('mapa-simulacion');
+    const mapa = L.map('mapa-simulacion').setView([-1.8312, -78.1834], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mapa);
 
-    if (puntosRuta.length > 0) {
-        mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 7);
+    // Función para crear nodos visuales nativos HTML/CSS (soporta cambio de tamaño)
+    function crearNodo(color, size = 14) {
+        return L.divIcon({
+            className: 'custom-nodo',
+            html: `<div class="nodo-mapa" style="background-color: ${color}; width: ${size}px; height: ${size}px; color: ${color};"></div>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+            popupAnchor: [0, -10]
+        });
+    }
 
+    // Instanciar los nodos nativos
+    const nodoGris = crearNodo('#6b7280', 10); // Nodo pequeño gris para sedes inactivas
+    const nodoColor = crearNodo('#8a2be2', 16); // Nodo morado más grande para las paradas del camión
+
+    todasLasSedes.forEach(s => {
+        L.marker([s.lat, s.lng], { icon: nodoGris })
+            .addTo(mapa)
+            .bindPopup(`<b>Nodo de Red:</b> Sede ${s.nombre}`);
+    });
+
+    if (puntosRuta.length > 0) {
         puntosRuta.forEach((punto, index) => {
-            L.marker([punto.lat, punto.lng])
+            let rol = `Parada #${index + 1}: Sede ${punto.nombre}`;
+            if (index === 0) rol = `<b>Punto de Partida del Camión:</b> Sede ${punto.nombre}`;
+            if (index === puntosRuta.length - 1) rol = `<b>Última Entrega (Destino):</b> Sede ${punto.nombre}`;
+
+            L.marker([punto.lat, punto.lng], { icon: nodoColor })
                 .addTo(mapa)
-                .bindPopup(`<b>Parada ${index + 1}:</b> ${punto.nombre}`)
+                .bindPopup(rol)
                 .openPopup();
         });
 
@@ -245,30 +310,26 @@
             const urlOSRM = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
 
             fetch(urlOSRM)
-                .then(response => {
-                    if (!response.ok) throw new Error("Error OSRM");
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.routes && data.routes.length > 0) {
-                        const coordsRutaReal = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-                        const polyline = L.polyline(coordsRutaReal, { color: '#2563eb', weight: 5, opacity: 0.85 }).addTo(mapa);
-                        mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-                    } else {
-                        trazarLineaRectaRespaldo();
-                    }
-                })
-                .catch(error => { trazarLineaRectaRespaldo(); });
-        } else {
-            mapa.setView([puntosRuta[0].lat, puntosRuta[0].lng], 13);
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.routes && data.routes.length > 0) {
+                            const coordsRutaReal = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                            const polyline = L.polyline(coordsRutaReal, { color: '#00f0ff', weight: 6, opacity: 0.9 }).addTo(mapa);
+                            mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+                        } else {
+                            trazarLineaRectaRespaldo();
+                        }
+                    })
+                    .catch(() => { trazarLineaRectaRespaldo(); });
         }
-    } else {
-        mapa.setView([-1.8312, -78.1834], 6);
+    } else if (todasLasSedes.length > 0) {
+        const limitesSedes = todasLasSedes.map(s => [s.lat, s.lng]);
+        mapa.fitBounds(limitesSedes, { padding: [40, 40] });
     }
 
     function trazarLineaRectaRespaldo() {
         const coordenadasRectas = puntosRuta.map(p => [p.lat, p.lng]);
-        const polyline = L.polyline(coordenadasRectas, { color: '#ef4444', weight: 4, dashArray: '5, 10' }).addTo(mapa);
+        const polyline = L.polyline(coordenadasRectas, { color: '#8a2be2', weight: 4, dashArray: '6, 12' }).addTo(mapa);
         mapa.fitBounds(polyline.getBounds(), { padding: [50, 50] });
     }
 /*]]>*/

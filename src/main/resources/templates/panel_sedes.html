@@ -52,13 +52,131 @@
     .btn-editar { background: #331a4d; color: var(--nexus-purple); border: 1px solid var(--nexus-purple); }
     .btn-eliminar { background: #4d1a1a; color: #ff5555; border: 1px solid #ff5555; }
 
-    /* Modal */
-    .modal-card { background: var(--nexus-card); border-radius: 18px; border: 1px solid var(--nexus-purple); }
-    .modal-header { background: var(--nexus-purple); color: white; padding: 20px 25px; }
-    .btn-modal-guardar { background: var(--nexus-cyan); color: #000; border: none; }
-    .btn-modal-cancelar { background: #333; color: white; }
+    /* Modales con Scroll */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(4px);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 20px;
+    }
+    
+    .modal-overlay.active { display: flex; }
 
-    /* Alertas */
+    .modal-card { 
+        background: var(--nexus-card); 
+        border-radius: 18px; 
+        border: 1px solid var(--nexus-purple); 
+        width: 100%;
+        max-width: 600px;
+        max-height: 85vh; 
+        display: flex;
+        flex-direction: column; 
+        box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+        overflow: hidden;
+        animation: animarModal 0.3s ease;
+    }
+    
+    @keyframes animarModal {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header { 
+        background: var(--nexus-purple); 
+        color: white; 
+        padding: 20px 25px; 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0; 
+    }
+    
+    .modal-header h2 { font-size: 20px; }
+
+    .modal-body {
+        padding: 25px;
+        overflow-y: auto; 
+        flex-grow: 1;
+    }
+    
+    /* Evita que el formulario inyectado duplique el padding interno */
+    .modal-body form { padding: 0; }
+
+    .btn-close {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        opacity: 0.7;
+        transition: 0.2s;
+    }
+    .btn-close:hover { opacity: 1; color: var(--nexus-cyan); }
+    
+    /* DISEÑO UNIFICADO PARA LOS BOTONES DEL FRAGMENTO EDICIÓN */
+    .modal-btn-group {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+    
+    .btn-modal-cancelar, .btn-modal-guardar {
+        padding: 12px 22px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: 0.3s;
+    }
+    
+    .btn-modal-cancelar {
+        background: #331e24;
+        color: #ff5555;
+        border: 1px solid #ff5555;
+    }
+    .btn-modal-cancelar:hover {
+        background: #4d1a1a;
+        box-shadow: 0 0 12px rgba(255, 85, 85, 0.4);
+    }
+    
+    .btn-modal-guardar {
+        background: var(--nexus-cyan);
+        color: #0b0c10;
+    }
+    .btn-modal-guardar:hover {
+        background: #00d4e2;
+        box-shadow: 0 0 15px var(--nexus-cyan);
+    }
+
+    /* Alertas Toasts Flotantes con Transición */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; }
+    
+    .alerta { 
+        padding: 15px 25px; 
+        border-radius: 10px; 
+        font-weight: 600; 
+        font-size: 14px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+        transition: opacity 0.5s ease, transform 0.5s ease; 
+    }
+    
+    .alerta.fade-out {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    
     .alerta-error { background: #2a0000; color: #ff5555; border: 1px solid #ff5555; }
     .alerta-exito { background: #002a2a; color: var(--nexus-cyan); border: 1px solid var(--nexus-cyan); }
 </style>
@@ -154,7 +272,7 @@
     </div>
 </div>
 
-<!-- ==================== CONTENEDOR DEL MODAL "EL CUADRADO" ==================== -->
+<!-- ==================== CONTENEDOR DEL MODAL CORREGIDO ==================== -->
 <div id="modalEditar" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
@@ -162,12 +280,25 @@
             <button type="button" class="btn-close" onclick="cerrarModal()">&times;</button>
         </div>
         <div class="modal-body" id="modalBodyContainer">
-            <!-- Se inyectará el fragmento editar_sede.html aquí... -->
+            <!-- Se inyectará el fragmento editar_sede.html aquí sin duplicar estilos -->
         </div>
     </div>
 </div>
 
 <script>
+    // --- TEMPORIZADOR PARA DESAPARECER LAS NOTIFICACIONES (2 SEGUNDOS) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const alertas = document.querySelectorAll('.alerta');
+        alertas.forEach(function(alerta) {
+            setTimeout(function() {
+                alerta.classList.add('fade-out'); 
+                setTimeout(function() {
+                    alerta.remove(); 
+                }, 500); 
+            }, 2000); 
+        });
+    });
+
     // --- LÓGICA DE GOOGLE MAPS (CREACIÓN) ---
     let map;
     let marcador;
@@ -235,7 +366,6 @@
         modalBody.innerHTML = "<p style='text-align: center; color: #6b7280;'>Cargando mapa e información de la sede...</p>";
         modal.classList.add('active');
 
-        // Consumir el Fragmento del controlador
         fetch(`/sedes/editar/${id}`)
             .then(response => {
                 if(!response.ok) throw new Error("No se pudo obtener la plantilla de edición");
@@ -244,15 +374,13 @@
             .then(htmlFragment => {
                 modalBody.innerHTML = htmlFragment;
 
-                // Extraemos latitud y longitud cargados en el formulario para iniciar el mapa del modal
                 const editLat = document.getElementById("editLatitud").value;
                 const editLng = document.getElementById("editLongitud").value;
 
-                // Inicializamos el mapa en el modal con sus respectivas coordenadas
                 initMapEditar(editLat, editLng);
             })
             .catch(error => {
-                modalBody.innerHTML = "<p style='color:red; text-align:center;'>Error al cargar el fragmento de la sede.</p>";
+                modalBody.innerHTML = "<p style='color:#ff5555; text-align:center;'>Error al cargar el fragmento de la sede.</p>";
                 console.error(error);
             });
     }

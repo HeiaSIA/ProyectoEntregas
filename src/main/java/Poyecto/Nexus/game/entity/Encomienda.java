@@ -26,6 +26,11 @@ public class Encomienda {
     @JoinColumn(name = "id_sede_destino", nullable = false)
     private Sede sedeDestino;
 
+    // ¿Quién maneja el camión con este paquete? (Puede ser nulo hasta que el admin consolide el lote)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_conductor", nullable = true)
+    private Usuario conductor;
+
     @Column(nullable = false)
     private LocalDateTime fechaEmision;
 
@@ -39,7 +44,6 @@ public class Encomienda {
 
     public Encomienda() {}
 
-    // Getters y Setters
     public Long getIdEncomienda() {
         return idEncomienda;
     }
@@ -70,6 +74,14 @@ public class Encomienda {
 
     public void setSedeDestino(Sede sedeDestino) {
         this.sedeDestino = sedeDestino;
+    }
+
+    public Usuario getConductor() {
+        return conductor;
+    }
+
+    public void setConductor(Usuario conductor) {
+        this.conductor = conductor;
     }
 
     public LocalDateTime getFechaEmision() {

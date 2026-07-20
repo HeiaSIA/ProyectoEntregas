@@ -1,18 +1,45 @@
 package Poyecto.Nexus.game.service;
 
 import java.util.List;
+import org.springframework.stereotype.Service;
 import Poyecto.Nexus.game.entity.Producto;
 import Poyecto.Nexus.game.entity.CategoriaComponente;
+import Poyecto.Nexus.game.repository.ProductoRepository;
 
-public interface ProductoService {
+@Service
+public class ProductoService {
+
+    private final ProductoRepository productoRepository;
+
+    // Inyección limpia por constructor (Reemplaza al @Autowired)
+    public ProductoService(ProductoRepository productoRepository) {
+        this.productoRepository = productoRepository;
+    }
+
     // Obtener todos los productos para la tienda 
-    List<Producto> obtenerCatalogoTienda();
+    public List<Producto> obtenerCatalogoTienda() {
+        return productoRepository.findByDisponibleCatalogoTrue();
+    }
 
     // Obtener componentes específicos 
-    List<Producto> obtenerComponentesParaArmar(CategoriaComponente categoria);
+    public List<Producto> obtenerComponentesParaArmar(CategoriaComponente categoria) {
+        return productoRepository.findByDisponibleArmarPcTrueAndCategoriaComponente(categoria);
+    }
     
     // Método de Guardado
-    Producto guardarProducto(Producto producto);
+    public Producto guardarProducto(Producto producto) {
+        return productoRepository.save(producto);
+    }
 
-	List<Producto> listarTodos();
+    public List<Producto> listarTodos() {
+        return productoRepository.findAll();
+    }
+
+    // ==========================================
+    //   MÉTODO NUEVO PARA PROCESAR LA COMPRA
+    // ==========================================
+    public Producto buscarPorId(Long id) {
+        return productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Producto no encontrado con ID: " + id));
+    }
 }

@@ -1,9 +1,13 @@
 package Poyecto.Nexus.game.controller;
 
 import Poyecto.Nexus.game.entity.Producto;
+import Poyecto.Nexus.game.entity.Sede;
+import Poyecto.Nexus.game.entity.InventarioSede;
 import Poyecto.Nexus.game.service.ProductoService; 
 import Poyecto.Nexus.game.repository.ProductoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import Poyecto.Nexus.game.repository.SedeRepository; 
+import Poyecto.Nexus.game.repository.InventarioSedeRepository;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,32 +24,39 @@ import java.util.UUID;
 @RequestMapping("/productos")
 public class ProductoController {
 
-    @Autowired
-    private ProductoRepository productoRepository;
-    
-    @Autowired
-    private ProductoService productoService;
+    private final ProductoRepository productoRepository;
+    private final ProductoService productoService;
+    private final SedeRepository sedeRepository; 
+    private final InventarioSedeRepository inventarioSedeRepository;
 
     private final String RUTA_IMAGENES = "src/main/resources/static/imagenes/";
+
+    // Inyección limpia por constructor
+    public ProductoController(ProductoRepository productoRepository, 
+                              ProductoService productoService, 
+                              SedeRepository sedeRepository,
+                              InventarioSedeRepository inventarioSedeRepository) {
+        this.productoRepository = productoRepository;
+        this.productoService = productoService;
+        this.sedeRepository = sedeRepository;
+        this.inventarioSedeRepository = inventarioSedeRepository;
+    }
 
     @GetMapping
     public String mostrarPanel(Model model) {
         model.addAttribute("nuevoProducto", new Producto());
-        model.addAttribute("listaProductos", productoRepository.findAll());
+        
+        // Enviamos la lista del inventario real en lugar de solo productos sueltos
+        model.addAttribute("listaInventario", inventarioSedeRepository.findAll());
+        model.addAttribute("listaSedes", sedeRepository.findAll()); 
         return "panel_productos";
     }
     
     @GetMapping("/poliza")
     public String verPolizaGarantia(Model model) {
-        // Listamos todos los productos
         List<Producto> lista = productoService.listarTodos();
         model.addAttribute("listaProductos", lista);
         return "ver_poliza"; 
-    }
-    @GetMapping("/catalogo")
-    public String mostrarCatalogo(Model model) {
-        model.addAttribute("listaProductos", productoService.obtenerCatalogoTienda());
-        return "catalogo";
     }
 
     @GetMapping("/editar/{id}")
@@ -55,14 +66,28 @@ public class ProductoController {
             return "redirect:/productos?error=productoNoEncontrado";
         }
         model.addAttribute("nuevoProducto", producto);
-        model.addAttribute("listaProductos", productoRepository.findAll());
+        model.addAttribute("listaInventario", inventarioSedeRepository.findAll());
+        model.addAttribute("listaSedes", sedeRepository.findAll());
+        
+        // Buscamos si ya tiene un inventario registrado para poblar los inputs de stock y sede en la vista
+        InventarioSede inventarioExistente = inventarioSedeRepository.findAll().stream()
+                .filter(inv -> inv.getProducto().getIdProducto().equals(id))
+                .findFirst().orElse(null);
+        
+        if (inventarioExistente != null) {
+            model.addAttribute("stockActual", inventarioExistente.getStockDisponible());
+            model.addAttribute("sedeActualId", inventarioExistente.getSede().getIdSede()); 
+        }
+        
         return "panel_productos";
     }
 
     @PostMapping("/guardar")
     public String guardarProducto(
             @ModelAttribute Producto producto,
-            @RequestParam("archivoImagen") MultipartFile archivoImagen) {
+            @RequestParam("archivoImagen") MultipartFile archivoImagen,
+            @RequestParam("idSedeInventario") Long idSedeInventario,
+            @RequestParam("stock") Integer stock) { // Capturamos el stock explícitamente desde el formulario
 
         boolean esEdicion = producto.getIdProducto() != null;
 
@@ -98,7 +123,21 @@ public class ProductoController {
                 }
             }
 
-            productoRepository.save(producto);
+            // 1. Guardamos la información base del producto
+            Producto productoGuardado = productoRepository.save(producto);
+
+            // 2. Localizamos la sede física asociada al stock
+            Sede sedeOrigen = sedeRepository.findById(idSedeInventario)
+                    .orElseThrow(() -> new IllegalArgumentException("La Sede ID " + idSedeInventario + " no existe."));
+
+            // 3. Obtenemos el inventario correspondiente o generamos uno nuevo
+            InventarioSede inventarioSede = inventarioSedeRepository
+                    .findBySedeAndProducto(sedeOrigen, productoGuardado)
+                    .orElse(new InventarioSede(sedeOrigen, productoGuardado, 0));
+
+            // 4. Escribimos directamente el stock en el inventario físico de la sede
+            inventarioSede.setStockDisponible(stock);
+            inventarioSedeRepository.save(inventarioSede);
 
         } catch (IOException e) {
             e.printStackTrace();

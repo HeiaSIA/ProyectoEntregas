@@ -11,22 +11,19 @@ public class Producto {
     private Long idProducto;
 
     @Column(nullable = false)
-    private String nombre; // Ej: Laptop ASUS ROG Strix G17
+    private String nombre; 
 
     @Column(columnDefinition = "TEXT")
-    private String descripcion; // Ej: Configurada con RTX 4060 y Ryzen 9 serie 7000
+    private String descripcion; 
 
     @Column(nullable = false)
     private Double precioBase;
 
     @Column(nullable = false)
-    private String imagen; // Ej: laptop_asus.jpg
-
-    @Column(nullable = false)
-    private Integer stock = 0; // NUEVO CAMPO: Inicializado en 0 por defecto
+    private String imagen; 
     
     @Column(nullable = false)
-    private String garantia = "12 meses"; 
+    private String garantia = "12 months"; 
 
     @Column(name = "disponible_catalogo", nullable = false)
     private boolean disponibleCatalogo = true; 
@@ -42,23 +39,20 @@ public class Producto {
     public Producto() {
     }
     
-
-    // Constructor con parámetros (Actualizado con stock)
-    public Producto(String nombre, String descripcion, Double precioBase, String imagen, Integer stock, 
+    // Constructor con parámetros (Actualizado: Sin el campo stock)
+    public Producto(String nombre, String descripcion, Double precioBase, String imagen, 
             String garantia, boolean disponibleCatalogo, boolean disponibleArmarPc, CategoriaComponente categoriaComponente) {
-			this.nombre = nombre;
-			this.descripcion = descripcion;
-			this.precioBase = precioBase;
-			this.imagen = imagen;
-			this.stock = stock;
-			this.garantia = garantia;
-			this.disponibleCatalogo = disponibleCatalogo;
-			this.disponibleArmarPc = disponibleArmarPc;
-			this.categoriaComponente = categoriaComponente;
-	}
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.precioBase = precioBase;
+        this.imagen = imagen;
+        this.garantia = garantia;
+        this.disponibleCatalogo = disponibleCatalogo;
+        this.disponibleArmarPc = disponibleArmarPc;
+        this.categoriaComponente = categoriaComponente;
+    }
 
     // Getters y Setters
-
     public Long getIdProducto() {
         return idProducto;
     }
@@ -99,52 +93,35 @@ public class Producto {
         this.imagen = imagen;
     }
 
-    // NUEVO GETTER Y SETTER PARA STOCK
-    public Integer getStock() {
-        return stock;
+    public String getGarantia() {
+        return garantia;
     }
 
-    public void setStock(Integer stock) {
-        this.stock = stock;
+    public void setGarantia(String garantia) {
+        this.garantia = garantia;
     }
 
-    // Nuevos Getters y Setters
-	public String getGarantia() {
-		return garantia;
-	}
+    public boolean isDisponibleCatalogo() {
+        return disponibleCatalogo;
+    }
 
+    public void setDisponibleCatalogo(boolean disponibleCatalogo) {
+        this.disponibleCatalogo = disponibleCatalogo;
+    }
 
-	public void setGarantia(String garantia) {
-		this.garantia = garantia;
-	}
+    public boolean isDisponibleArmarPc() {
+        return disponibleArmarPc;
+    }
 
+    public void setDisponibleArmarPc(boolean disponibleArmarPc) {
+        this.disponibleArmarPc = disponibleArmarPc;
+    }
 
-	public boolean isDisponibleCatalogo() {
-		return disponibleCatalogo;
-	}
+    public CategoriaComponente getCategoriaComponente() {
+        return categoriaComponente;
+    }
 
-
-	public void setDisponibleCatalogo(boolean disponibleCatalogo) {
-		this.disponibleCatalogo = disponibleCatalogo;
-	}
-
-
-	public boolean isDisponibleArmarPc() {
-		return disponibleArmarPc;
-	}
-
-
-	public void setDisponibleArmarPc(boolean disponibleArmarPc) {
-		this.disponibleArmarPc = disponibleArmarPc;
-	}
-
-
-	public CategoriaComponente getCategoriaComponente() {
-		return categoriaComponente;
-	}
-
-
-	public void setCategoriaComponente(CategoriaComponente categoriaComponente) {
-		this.categoriaComponente = categoriaComponente;
-	}
+    public void setCategoriaComponente(CategoriaComponente categoriaComponente) {
+        this.categoriaComponente = categoriaComponente;
+    }
 }

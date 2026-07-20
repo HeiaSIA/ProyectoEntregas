@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nexus Gaming - Catálogo Oficial</title>
+  
+  <!-- Configuración de Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -19,10 +21,14 @@
       }
     }
   </script>
+
+  <!-- Mapas con Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="bg-nexusDark text-gray-100 font-sans min-h-screen">
 
-  <!-- NAV BAR -->
+  <!-- Barra de navegación -->
   <header class="border-b border-nexusPurple/30 bg-nexusDark/90 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-2">
@@ -47,79 +53,184 @@
     </div>
   </header>
 
-  <!-- SECCIÓN DE PRODUCTOS -->
+  <!-- Alertas del sistema -->
+  <div class="max-w-7xl w-full mx-auto px-4 mt-6 space-y-3">
+    <!-- Éxito -->
+    <div th:if="${mensajeExito}" class="bg-green-500/10 border border-green-500 text-green-400 p-4 rounded-xl flex items-center justify-between shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+      <div class="flex items-center gap-2">
+        <span>✅</span>
+        <span th:text="${mensajeExito}" class="text-sm font-bold"></span>
+      </div>
+      <button onclick="this.parentElement.remove()" class="text-green-400 font-bold hover:text-white text-xl">&times;</button>
+    </div>
+
+    <!-- Error -->
+    <div th:if="${mensajeError}" class="bg-red-500/10 border border-red-500 text-red-400 p-4 rounded-xl flex items-center justify-between shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+      <div class="flex items-center gap-2">
+        <span>⚠️</span>
+        <div class="flex flex-col">
+          <span class="text-xs uppercase font-black text-red-500">Fallo en el sistema</span>
+          <span th:text="${mensajeError}" class="text-sm font-medium mt-0.5"></span>
+        </div>
+      </div>
+      <button onclick="this.parentElement.remove()" class="text-red-400 font-bold hover:text-white text-xl">&times;</button>
+    </div>
+  </div>
+
+  <!-- Catálogo de productos -->
   <main class="max-w-7xl mx-auto px-4 py-12">
     <div class="text-center mb-10">
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">PRODUCTOS DISPONIBLES</h1>
       <p class="text-nexusPurple font-medium text-sm tracking-wide uppercase">Equipamiento de alto rendimiento optimizado</p>
     </div>
 
-    <!-- Grid del Catálogo Dinámico -->
+    <!-- Cuadrícula de inventario -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       
-      <div th:each="prod : ${listaProductos}" 
+      <div th:each="inv : ${listaInventario}" 
            class="bg-nexusCard border border-nexusCyan/20 hover:border-nexusCyan rounded-xl p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)] group">
         
         <div>
-          <img th:if="${prod.imagen != null}" 
-               th:src="@{'/imagenes/' + ${prod.imagen}}" 
-               th:alt="${prod.nombre}" 
+          <img th:if="${inv.producto.imagen != null}" 
+               th:src="@{'/imagenes/' + ${inv.producto.imagen}}" 
+               th:alt="${inv.producto.nombre}" 
                class="w-full h-40 object-cover rounded-lg mb-4 border border-nexusPurple/10">
           
-          <img th:if="${prod.imagen == null}" 
+          <img th:if="${inv.producto.imagen == null}" 
                src="https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=400&auto=format&fit=crop" 
                alt="Imagen por defecto" 
                class="w-full h-40 object-cover rounded-lg mb-4 opacity-50">
 
           <div class="flex items-center justify-between mt-1 mb-2">
-            <span class="text-[10px] text-nexusCyan uppercase font-bold tracking-widest">NEXUS GEAR</span>
+            <span class="text-[10px] bg-nexusCyan/10 text-nexusCyan uppercase font-black tracking-widest px-2 py-0.5 rounded border border-nexusCyan/20"
+                  th:text="'📍 ' + ${inv.sede.nombreCiudad}">
+              SEDE
+            </span>
             
-            <span th:if="${prod.stock > 5}" class="text-[10px] text-green-400 font-extrabold tracking-wide">
+            <span th:if="${inv.stockDisponible > 5}" class="text-[10px] text-green-400 font-extrabold tracking-wide">
               🟢 En Stock
             </span>
-            <span th:if="${prod.stock <= 5 and prod.stock > 0}" class="text-[10px] text-amber-400 font-extrabold tracking-wide" 
-                  th:text="'🟡 ¡Solo ' + ${prod.stock} + '!'">
+            <span th:if="${inv.stockDisponible <= 5 and inv.stockDisponible > 0}" class="text-[10px] text-amber-400 font-extrabold tracking-wide" 
+                  th:text="'🟡 ¡Solo ' + ${inv.stockDisponible} + '!'">
             </span>
-            <span th:if="${prod.stock == 0 or prod.stock == null}" class="text-[10px] text-red-500 font-extrabold tracking-wide">
+            <span th:if="${inv.stockDisponible == 0 or inv.stockDisponible == null}" class="text-[10px] text-red-500 font-extrabold tracking-wide">
               🔴 Agotado
             </span>
           </div>
 
-          <h3 class="font-bold text-white text-lg mt-1" th:text="${prod.nombre}">Nombre del Hardware</h3>
-          <p class="text-xs text-gray-400 mt-2 leading-relaxed" th:text="${prod.descripcion}">Descripción corta técnica.</p>
-          <p class="text-nexusCyan font-black text-xl mt-4" th:text="${'$' + #numbers.formatDecimal(prod.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}">$0.00</p>
+          <h3 class="font-bold text-white text-lg mt-1" th:text="${inv.producto.nombre}">Nombre del Hardware</h3>
+          <p class="text-xs text-gray-400 mt-2 leading-relaxed" th:text="${inv.producto.descripcion}">Descripción corta técnica.</p>
+          <p class="text-nexusCyan font-black text-xl mt-4" th:text="${'$' + #numbers.formatDecimal(inv.producto.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}">$0.00</p>
         </div>
 
         <div class="mt-6 space-y-2">
-          
-          <th:block th:if="${prod.stock > 0}">
-            <!-- Corregido usando th:data-nombre y leyendo el atributo en el click -->
-            <button th:data-nombre="${prod.nombre}"
+          <th:block th:if="${inv.stockDisponible > 0}">
+            <button th:data-nombre="${inv.producto.nombre}"
                     onclick="agregarAlCarrito(this.getAttribute('data-nombre'))" 
                     class="w-full text-center text-xs text-nexusPurple font-bold hover:text-white transition-colors py-2.5 border border-nexusPurple/30 rounded-lg hover:bg-nexusPurple/20 cursor-pointer">
               🛒 Añadir al carrito
             </button>
-            <button th:data-nombre="${prod.nombre}"
-                    onclick="comprarProducto(this.getAttribute('data-nombre'))" 
+            <button type="button"
+                    th:data-id="${inv.producto.idProducto}"
+                    th:data-nombre="${inv.producto.nombre}"
+                    th:data-sede="${inv.sede.idSede}"
+                    onclick="abrirModalCompra(this.getAttribute('data-id'), this.getAttribute('data-nombre'), this.getAttribute('data-sede'))" 
                     class="w-full text-center text-xs text-black bg-nexusCyan hover:bg-white font-extrabold py-2.5 rounded-lg transition-colors cursor-pointer">
               ⚡ Comprar ahora
             </button>
           </th:block>
 
-          <th:block th:if="${prod.stock == 0 or prod.stock == null}">
+          <th:block th:if="${inv.stockDisponible == 0 or inv.stockDisponible == null}">
             <button class="w-full text-center text-xs text-gray-500 bg-gray-800/40 font-bold py-3 rounded-lg border border-gray-700/30 cursor-not-allowed" disabled>
               ❌ Fuera de Stock
             </button>
           </th:block>
-
         </div>
       </div>
 
     </div>
   </main>
 
-  <script>
+  <!-- Modal de compra con mapa -->
+  <div id="modalCompra" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center px-4" style="display: none;">
+    <div class="bg-nexusCard border border-nexusPurple rounded-xl shadow-[0_0_30px_rgba(138,43,226,0.3)] w-full max-w-4xl overflow-hidden flex flex-col">
+      
+      <!-- Cabecera -->
+      <div class="bg-gradient-to-r from-nexusPurple to-nexusCyan p-4 flex justify-between items-center">
+        <h2 class="text-white font-black text-lg md:text-xl tracking-wide">PUNTO DE RETIRO Y CONFIGURACIÓN DE ORDEN</h2>
+        <button onclick="cerrarModalCompra()" class="text-white/70 hover:text-white font-bold text-2xl transition-colors">&times;</button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+        
+        <!-- Formulario de despacho -->
+        <form th:action="@{/comprar}" method="POST" class="flex flex-col gap-4">
+          <input type="hidden" id="modalProductoId" name="idProducto">
+          <input type="hidden" id="modalUsuarioId" name="idUsuario"> 
+
+          <div>
+            <label class="block text-xs font-bold text-nexusCyan uppercase tracking-widest mb-1">Hardware Seleccionado</label>
+            <p id="modalProductoNombre" class="text-xl text-white font-black tracking-wide">Cargando...</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-nexusCyan uppercase tracking-widest mb-1">Sede para Retirar Paquete</label>
+            <select id="selectSedeDestino" name="idSedeDestino" required 
+                    onchange="sincronizarSeleccionDesdeSelect(this.value)"
+                    class="w-full bg-nexusDark border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-nexusCyan transition-colors">
+              <option value="">Selecciona una sede o usa el mapa...</option>
+              <option th:each="sede : ${listaSedes}" 
+                      th:value="${sede.idSede}" 
+                      th:text="${sede.nombreCiudad}"></option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-nexusCyan uppercase tracking-widest mb-1">Cantidad de Unidades</label>
+            <input type="number" name="cantidad" min="1" value="1" required 
+                   class="w-full bg-nexusDark border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-nexusCyan transition-colors">
+          </div>
+
+          <div class="flex gap-3 mt-4">
+            <button type="button" onclick="cerrarModalCompra()" class="flex-1 py-3 text-sm font-bold text-gray-400 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" class="flex-1 py-3 text-sm font-black text-black bg-nexusCyan hover:bg-white rounded-lg transition-colors shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+              Despachar Orden
+            </button>
+          </div>
+        </form>
+
+        <!-- Contenedor del mapa -->
+        <div class="flex flex-col gap-2">
+          <label class="block text-xs font-bold text-nexusCyan uppercase tracking-widest">Mapa de Cobertura Oficial</label>
+          <div id="mapa-modal" class="w-full h-[300px] md:h-[350px] border border-nexusPurple/40 rounded-lg shadow-inner" style="z-index: 10;"></div>
+          <span class="text-[10px] text-gray-400 italic">Puedes interactuar y seleccionar tu sede haciendo clic en los puntos geográficos.</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts funcionales -->
+  <script th:inline="javascript">
+  /*<![CDATA[*/
+
+    // Carga de sedes desde el backend
+    const sedes = [];
+    /*[# th:each="s : ${listaSedes}"]*/
+    sedes.push({
+        id: /*[[${s.idSede}]]*/ 0,
+        nombre: /*[[${s.nombreCiudad}]]*/ '',
+        lat: /*[[${s.latitud}]]*/ 0,
+        lng: /*[[${s.longitud}]]*/ 0
+    });
+    /*[/]*/
+
+    // Variables de sesión
     const userName = localStorage.getItem('usuario_nombre');
+    const userId = localStorage.getItem('usuario_id') || 1; 
+
     if (!userName) {
         window.location.href = '/';
     } else {
@@ -127,21 +238,119 @@
     }
 
     let itemsEnCarrito = 0;
-
     function agregarAlCarrito(producto) {
         itemsEnCarrito++;
         document.getElementById('cartCount').textContent = itemsEnCarrito;
         alert(`¡${producto} se añadió al carrito con éxito!`);
     }
 
-    function comprarProducto(producto) {
-        alert(`Iniciando pasarela de pago segura para: ${producto}`);
-    }
-
     function cerrarSesion() {
         localStorage.clear();
         window.location.href = '/';
     }
+
+    // Configuración del mapa Leaflet
+    let mapaInstancia = null;
+    let marcadoresGlobales = {};
+
+    // Íconos para los marcadores
+    const iconoAzul = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    const iconoVerde = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
+
+    function renderizarMapaEstructura() {
+        if (mapaInstancia) {
+            mapaInstancia.invalidateSize();
+            return;
+        }
+
+        // Centrado inicial en Ecuador
+        mapaInstancia = L.map('mapa-modal').setView([-1.8312, -78.1834], 7);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapaInstancia);
+
+        const limites = [];
+
+        sedes.forEach(sede => {
+            const marcador = L.marker([sede.lat, sede.lng], { icon: iconoAzul })
+                .addTo(mapaInstancia)
+                .bindPopup(`<b>Sede Nexus:</b> ${sede.nombre}`);
+
+            marcador.on('click', function() {
+                sincronizarSeleccionDesdeMapa(sede.id);
+            });
+
+            marcadoresGlobales[sede.id] = marcador;
+            limites.push([sede.lat, sede.lng]);
+        });
+
+        if (limites.length > 0) {
+            mapaInstancia.fitBounds(limites, { padding: [40, 40] });
+        }
+    }
+
+    function sincronizarSeleccionDesdeSelect(idSede) {
+        actualizarEstadosMarcadores(idSede);
+    }
+
+    function sincronizarSeleccionDesdeMapa(idSede) {
+        document.getElementById('selectSedeDestino').value = idSede;
+        actualizarEstadosMarcadores(idSede);
+    }
+
+    function actualizarEstadosMarcadores(idSedeSeleccionada) {
+        Object.keys(marcadoresGlobales).forEach(id => {
+            if (id == idSedeSeleccionada) {
+                marcadoresGlobales[id].setIcon(iconoVerde);
+                mapaInstancia.panTo(marcadoresGlobales[id].getLatLng());
+                marcadoresGlobales[id].openPopup();
+            } else {
+                marcadoresGlobales[id].setIcon(iconoAzul);
+            }
+        });
+    }
+
+    function abrirModalCompra(idProducto, nombreProducto, idSedeOrigen) {
+        document.getElementById('modalProductoId').value = idProducto;
+        document.getElementById('modalProductoNombre').textContent = nombreProducto;
+        document.getElementById('modalUsuarioId').value = userId; 
+        
+        const modal = document.getElementById('modalCompra');
+        
+        // Corrección rápida para evitar un posible error de visualización en Tailwind
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+
+        setTimeout(() => {
+            renderizarMapaEstructura();
+            
+            // Si el producto pertenece a una sede específica, lo seleccionamos en el mapa
+            if (idSedeOrigen) {
+                document.getElementById('selectSedeDestino').value = idSedeOrigen;
+                actualizarEstadosMarcadores(idSedeOrigen);
+            } else {
+                document.getElementById('selectSedeDestino').value = "";
+                Object.keys(marcadoresGlobales).forEach(id => marcadoresGlobales[id].setIcon(iconoAzul));
+            }
+        }, 150);
+    }
+
+    function cerrarModalCompra() {
+        const modal = document.getElementById('modalCompra');
+        modal.style.display = 'none';
+    }
+
+  /*]]>*/
   </script>
 </body>
 </html>

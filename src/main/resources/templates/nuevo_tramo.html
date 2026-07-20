@@ -28,7 +28,7 @@
     
     form { padding:30px; display:flex; flex-direction:column; }
     label { margin-bottom:8px; color: var(--nexus-white); font-weight:600; font-size: 14px; }
-    select, input { padding:12px; background: #0b0c10; color: white; border:1px solid #45a29e; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; }
+    select, input { padding:12px; background: #0b0c10; color: white; border:1px solid #45a29e; border-radius:10px; margin-bottom:20px; font-size:15px; outline:none; width: 100%; }
     select:focus, input:focus { border-color: var(--nexus-cyan); box-shadow:0 0 10px rgba(0,240,255,0.4); }
     input[readonly] { background: #161920; color: var(--nexus-cyan); font-weight: bold; cursor: not-allowed; }
     
@@ -46,9 +46,10 @@
     
     .info-calculo { font-size: 13px; color: var(--nexus-cyan); margin-top: -15px; margin-bottom: 20px; font-style: italic; }
     
-    /* Alertas */
-    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-    .alerta { padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+    /* Alertas Toasts con animación de salida */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; }
+    .alerta { padding: 16px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .alerta.fade-out { opacity: 0; transform: translateY(-20px); }
     .alerta-error { background: #2a0000; color: #ff5555; border: 1px solid #ff5555; }
     .alerta-exito { background: #002a2a; color: var(--nexus-cyan); border: 1px solid var(--nexus-cyan); }
 
@@ -57,25 +58,57 @@
     .tabla-seccion h2 { color: var(--nexus-white); margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; }
     th { background: #0b0c10; color: var(--nexus-cyan); padding: 14px; font-size: 13px; border-bottom: 2px solid var(--nexus-purple); text-transform: uppercase; }
-    td { padding: 14px; border-bottom: 1px solid #45a29e; color: var(--nexus-text); }
+    td { padding: 14px; border-bottom: 1px solid #45a29e; color: var(--nexus-text); vertical-align: middle; }
     tr:hover td { background-color: #0b0c10; }
     
-    .badge-distancia { background: rgba(0, 240, 255, 0.1); color: var(--nexus-cyan); border: 1px solid var(--nexus-cyan); padding: 4px 10px; border-radius: 20px; }
+    .badge-distancia { background: rgba(0, 240, 255, 0.1); color: var(--nexus-cyan); border: 1px solid var(--nexus-cyan); padding: 4px 10px; border-radius: 20px; display: inline-block; }
 
     /* Botones Acción */
     .btn-accion { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; }
     .btn-editar { background: #331a4d; color: var(--nexus-purple); border: 1px solid var(--nexus-purple); }
     .btn-eliminar { background: #4d1a1a; color: #ff5555; border: 1px solid #ff5555; }
 
-    /* Modal */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    /* Modales Estructurados con Scroll */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal-overlay.active { display: flex; }
-    .modal-card { background: var(--nexus-card); border-radius: 18px; width: 100%; max-width: 500px; border: 1px solid var(--nexus-purple); }
-    .modal-header { background: var(--nexus-purple); color: white; padding: 20px; display: flex; justify-content: space-between; }
-    .btn-close { background: none; border: none; color: white; font-size: 28px; cursor: pointer; }
     
-    .btn-modal-guardar { background: var(--nexus-cyan); color: #000; border: none; padding: 10px; border-radius: 5px; }
-    .btn-modal-cancelar { background: #333; color: white; border: none; padding: 10px; border-radius: 5px; }
+    .modal-card { 
+        background: var(--nexus-card); 
+        border-radius: 18px; 
+        width: 100%; 
+        max-width: 550px; 
+        max-height: 85vh; 
+        border: 1px solid var(--nexus-purple); 
+        box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: animarModal 0.3s ease;
+    }
+    
+    @keyframes animarModal {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header { background: var(--nexus-purple); color: white; padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .modal-header h2 { font-size: 20px; }
+    
+    .modal-body { padding: 25px; overflow-y: auto; flex-grow: 1; }
+    .modal-body form { padding: 0; }
+    
+    .btn-close { background: none; border: none; color: white; font-size: 28px; cursor: pointer; line-height: 1; opacity: 0.7; transition: 0.2s; }
+    .btn-close:hover { opacity: 1; color: var(--nexus-cyan); }
+    
+    /* Diseño global de botones del modal */
+    .modal-btn-group { display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px; }
+    .btn-modal-cancelar, .btn-modal-guardar { padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: 0.3s; }
+    
+    .btn-modal-cancelar { background: #331e24; color: #ff5555; border: 1px solid #ff5555; }
+    .btn-modal-cancelar:hover { background: #4d1a1a; box-shadow: 0 0 12px rgba(255, 85, 85, 0.4); }
+    
+    .btn-modal-guardar { background: var(--nexus-cyan); color: #0b0c10; }
+    .btn-modal-guardar:hover { background: #00d4e2; box-shadow: 0 0 15px var(--nexus-cyan); }
 
     @media (max-width: 992px) { .grid-layout { grid-template-columns: 1fr; } }
 </style>
@@ -86,10 +119,10 @@
 <!-- Contenedor flotante de Toasts -->
 <div class="toast-container">
     <div th:if="${mensajeError}" class="alerta alerta-error">
-        <span th:text="'⚠️ ' + ${mensajeError}"></span>
+        <span th:text="${mensajeError}"></span>
     </div>
     <div th:if="${mensajeExito}" class="alerta alerta-exito">
-        <span th:text="'✅ ' + ${mensajeExito}"></span>
+        <span th:text="${mensajeExito}"></span>
     </div>
 </div>
 
@@ -130,7 +163,6 @@
 
                 <button type="submit">Guardar Ruta en el Sistema</button>
                 
-                <!-- NUEVO BOTÓN AGREGADO -->
                 <a href="/tramos/mapa" class="btn-mostrar">Mostrar Mapa de Red</a>
             </form>
         </div>
@@ -146,7 +178,7 @@
                                 <th>ID</th>
                                 <th>Origen</th>
                                 <th>Destino</th>
-                                <th>Distancia</th>
+                                <th>Métricas</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -160,18 +192,28 @@
                                 <td th:text="${tramo.idTramo}" style="font-weight: 600; color: #6b7280;"></td>
                                 <td th:text="${tramo.sedeOrigen.nombreCiudad}"></td>
                                 <td th:text="${tramo.sedeDestino.nombreCiudad}"></td>
+                                
+                                <!-- CORRECCIÓN: El <td> ya no tiene flexbox, el contenido está dentro de un <div> -->
                                 <td>
-                                    <span class="badge-distancia" th:text="${tramo.distanciaKm} + ' Km'"></span>
+                                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                        <span class="badge-distancia" th:text="${tramo.distanciaKm} + ' Km'"></span>
+                                        <span style="color: var(--nexus-purple); font-size: 11px; font-weight: bold;" 
+                                              th:text="'Aprox. ' + ${#numbers.formatDecimal(tramo.distanciaKm / 60.0, 1, 1)} + ' hrs'">
+                                        </span>
+                                    </div>
                                 </td>
+                                
                                 <td>
-                                    <button type="button" class="btn-accion btn-editar" th:onclick="'abrirModalEditar(' + ${tramo.idTramo} + ')'">
-                                        Editar
-                                    </button>
-                                    <a th:href="@{/tramos/eliminar/{id}(id=${tramo.idTramo})}" 
-                                       class="btn-accion btn-eliminar"
-                                       onclick="return confirm('¿Estás seguro de que deseas eliminar este tramo de conexión?');">
-                                        Eliminar
-                                    </a>
+                                    <div style="display: flex; gap: 6px;">
+                                        <button type="button" class="btn-accion btn-editar" th:onclick="'abrirModalEditar(' + ${tramo.idTramo} + ')'">
+                                            Editar
+                                        </button>
+                                        <a th:href="@{/tramos/eliminar/{id}(id=${tramo.idTramo})}" 
+                                           class="btn-accion btn-eliminar"
+                                           onclick="return confirm('¿Estás seguro de que deseas eliminar este tramo de conexión?');">
+                                            Eliminar
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -183,7 +225,7 @@
     </div> 
 </div>
 
-<!-- ==================== CONTENEDOR DEL MODAL "EL CUADRADO" ==================== -->
+<!-- ==================== CONTENEDOR DEL MODAL "EL CUADRADO" CORREGIDO ==================== -->
 <div id="modalEditar" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
@@ -197,6 +239,19 @@
 </div>
 
 <script>
+    // --- TEMPORIZADOR DE TOASTS (2 SEGUNDOS) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const alertas = document.querySelectorAll('.alerta');
+        alertas.forEach(function(alerta) {
+            setTimeout(function() {
+                alerta.classList.add('fade-out');
+                setTimeout(function() {
+                    alerta.remove();
+                }, 500);
+            }, 2000);
+        });
+    });
+
     // --- Lógica del Modal con Fragmento de Thymeleaf ---
     function abrirModalEditar(id) {
         const modal = document.getElementById('modalEditar');
@@ -212,9 +267,10 @@
             })
             .then(htmlFragment => {
                 modalBody.innerHTML = htmlFragment;
+                calcularDistanciaEdit();
             })
             .catch(error => {
-                modalBody.innerHTML = "<p style='color:red; text-align:center;'>Error al cargar el fragmento de edición.</p>";
+                modalBody.innerHTML = "<p style='color:#ff5555; text-align:center;'>Error al cargar el fragmento de edición.</p>";
                 console.error(error);
             });
     }
@@ -230,7 +286,7 @@
         }
     }
 
-    // --- Cálculo OSRM para Creación ---
+    // --- Cálculo OSRM para Creación (Con Horas) ---
     function calcularDistancia() {
         const selectOrigen = document.getElementById('origen');
         const selectDestino = document.getElementById('destino');
@@ -240,13 +296,13 @@
         if (selectOrigen.value && selectDestino.value) {
             if (selectOrigen.value === selectDestino.value) {
                 estadoCalculo.innerText = "Error: El origen y el destino no pueden ser la misma ciudad.";
-                estadoCalculo.style.color = "red";
+                estadoCalculo.style.color = "#ff5555";
                 inputDistancia.value = "";
                 return;
             }
 
             estadoCalculo.innerText = "Calculando ruta por carretera...";
-            estadoCalculo.style.color = "#10b981";
+            estadoCalculo.style.color = "var(--nexus-cyan)";
 
             const optionOrigen = selectOrigen.options[selectOrigen.selectedIndex];
             const optionDestino = selectDestino.options[selectDestino.selectedIndex];
@@ -264,23 +320,25 @@
                     if (data.code === 'Ok' && data.routes.length > 0) {
                         const ruta = data.routes[0];
                         const distanciaKm = (ruta.distance / 1000).toFixed(2);
+                        const horasEstimadas = (distanciaKm / 60.0).toFixed(1);
+                        
                         inputDistancia.value = distanciaKm;
-                        estadoCalculo.innerText = `Ruta calculada: ${distanciaKm} km`;
-                        estadoCalculo.style.color = "#2563eb"; 
+                        estadoCalculo.innerHTML = `Ruta calculada: <b>${distanciaKm} km</b> (Aprox. ${horasEstimadas} hrs)`;
+                        estadoCalculo.style.color = "var(--nexus-cyan)"; 
                     } else {
                         estadoCalculo.innerText = "No se pudo trazar una ruta por carretera.";
-                        estadoCalculo.style.color = "red";
+                        estadoCalculo.style.color = "#ff5555";
                         inputDistancia.value = "";
                     }
                 })
                 .catch(error => {
                     estadoCalculo.innerText = "Error de conexión con OSRM.";
-                    estadoCalculo.style.color = "red";
+                    estadoCalculo.style.color = "#ff5555";
                 });
         }
     }
 
-    // --- Cálculo OSRM dentro del Modal ---
+    // --- Cálculo OSRM dentro del Modal (Con Horas) ---
     function calcularDistanciaEdit() {
         const selectOrigen = document.getElementById('editOrigen');
         const selectDestino = document.getElementById('editDestino');
@@ -290,13 +348,13 @@
         if (selectOrigen && selectDestino && selectOrigen.value && selectDestino.value) {
             if (selectOrigen.value === selectDestino.value) {
                 estadoCalculo.innerText = "Error: El origen y el destino no pueden ser la misma ciudad.";
-                estadoCalculo.style.color = "red";
+                estadoCalculo.style.color = "#ff5555";
                 inputDistancia.value = "";
                 return;
             }
 
             estadoCalculo.innerText = "Recalculando ruta...";
-            estadoCalculo.style.color = "#2563eb";
+            estadoCalculo.style.color = "var(--nexus-cyan)";
 
             const optionOrigen = selectOrigen.options[selectOrigen.selectedIndex];
             const optionDestino = selectDestino.options[selectDestino.selectedIndex];
@@ -314,17 +372,19 @@
                     if (data.code === 'Ok' && data.routes.length > 0) {
                         const ruta = data.routes[0];
                         const distanciaKm = (ruta.distance / 1000).toFixed(2);
+                        const horasEstimadas = (distanciaKm / 60.0).toFixed(1);
+                        
                         inputDistancia.value = distanciaKm;
-                        estadoCalculo.innerText = `Ruta recalculada: ${distanciaKm} km`;
-                        estadoCalculo.style.color = "#10b981"; 
+                        estadoCalculo.innerHTML = `Ruta recalculada: <b>${distanciaKm} km</b> (Aprox. ${horasEstimadas} hrs)`;
+                        estadoCalculo.style.color = "var(--nexus-cyan)"; 
                     } else {
                         estadoCalculo.innerText = "Error al trazar ruta.";
-                        estadoCalculo.style.color = "red";
+                        estadoCalculo.style.color = "#ff5555";
                     }
                 })
                 .catch(error => {
                     estadoCalculo.innerText = "Error con servidor OSRM.";
-                    estadoCalculo.style.color = "red";
+                    estadoCalculo.style.color = "#ff5555";
                 });
         }
     }
