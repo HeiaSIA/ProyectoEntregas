@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Gaming - Rastreo de Encomienda</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nexusDark: '#0B0C10',
+            nexusCard: '#1A1A24',
+            nexusPurple: '#BC13FE',
+            nexusCyan: '#00F0FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    .radar-pulse {
+      box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7);
+      animation: pulse 1.5s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+    @keyframes pulse {
+      to { box-shadow: 0 0 0 10px rgba(0, 240, 255, 0); }
+    }
+    
+    /* Estilos para los marcadores nativos sin imágenes */
+    .nodo-mapa {
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px currentColor;
+    }
+  </style>
+</head>
+<body class="bg-nexusDark text-gray-100 font-sans min-h-screen flex flex-col">
+
+  <header class="border-b border-nexusPurple/30 bg-nexusDark/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-nexusCyan to-nexusPurple drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
+          NEXUS
+        </span>
+        <span class="text-xs font-bold uppercase text-nexusCyan tracking-widest px-2 py-0.5 border border-nexusCyan rounded">
+          TELEMETRÍA DE ENVÍO
+        </span>
+      </div>
+      <a href="/catalogo" class="text-xs font-bold text-gray-400 hover:text-white border border-gray-700 px-4 py-2 rounded-lg hover:bg-gray-800 transition-all">
+        ⬅ Volver al Catálogo
+      </a>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="bg-nexusCard border border-nexusPurple/30 rounded-xl p-6 flex flex-col justify-between h-fit gap-6 shadow-[0_0_25px_rgba(188,19,254,0.05)]">
+      
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs text-nexusPurple font-black tracking-widest uppercase">Orden de Despacho</span>
+          <span class="text-sm font-mono text-gray-400" th:text="'#NX-00' + ${encomienda.idEncomienda}">#NX-000</span>
+        </div>
+
+        <h1 class="text-2xl font-black text-white tracking-tight mb-6">RASTREO EN TIEMPO REAL</h1>
+        
+        <div class="bg-nexusDark border border-nexusCyan/20 rounded-lg p-4 flex items-center gap-4 mb-6">
+          <div class="w-3 h-3 rounded-full bg-nexusCyan radar-pulse"></div>
+          <div>
+            <p class="text-[10px] text-nexusCyan font-bold tracking-widest uppercase">Estado del Sistema</p>
+            <p class="text-lg font-extrabold text-white" th:text="${encomienda.estado}">PENDIENTE</p>
+          </div>
+        </div>
+
+        <div class="space-y-4 font-medium text-sm">
+          <div class="border-l-2 border-nexusPurple pl-4">
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Punto de Distribución (Origen)</p>
+            <p class="text-base text-white font-bold" th:text="${sedeOrigen.nombreCiudad}">Sede Origen</p>
+          </div>
+
+          <div class="border-l-2 border-nexusCyan pl-4">
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Punto de Retiro Elegido (Destino)</p>
+            <p class="text-base text-white font-bold" th:text="${sedeDestino.nombreCiudad}">Sede Destino</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-nexusDark/50 border border-gray-800 rounded-lg p-4 text-xs space-y-2">
+        <p class="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-2">Guía Visual del Mapa</p>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-white bg-[#a855f7] block" style="box-shadow: 0 0 8px #a855f7;"></span> <span>Sede de Origen</span></div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-white bg-[#eab308] block" style="box-shadow: 0 0 8px #eab308;"></span> <span>Escala Intermedia</span></div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-white bg-[#22d3ee] block" style="box-shadow: 0 0 8px #22d3ee;"></span> <span>Sede de Destino Final</span></div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-white bg-[#6b7280] block"></span> <span>Otras Sedes</span></div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-6 space-y-4">
+        <div>
+          <p class="text-[10px] text-nexusPurple font-bold tracking-widest uppercase mb-1">Métrica Óptima Dijkstra</p>
+          <p class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400" 
+             th:text="${#numbers.formatDecimal(encomienda.distanciaTotalCalculada, 1, 2)} + ' Km'">
+            0.00 Km
+          </p>
+        </div>
+
+        <div class="bg-nexusPurple/10 border border-nexusPurple/20 rounded-lg p-3 text-xs text-gray-300 leading-relaxed">
+          ⚡ <b>Topología de Red Activa:</b> Se despliegan todas las instalaciones de la empresa. La línea iluminada representa la ruta crítica más rápida.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="lg:col-span-2 flex flex-col gap-2 h-[500px] lg:h-full min-h-[500px]">
+      <div id="mapa-rastreo" class="w-full h-full bg-nexusCard border border-nexusCyan/30 rounded-xl shadow-[0_0_30px_rgba(0,240,255,0.05)]" style="z-index: 1;"></div>
+    </div>
+
+  </main>
+
+  <script th:inline="javascript">
+  /*<![CDATA[*/
+
+    const todasLasSedes = [];
+    /*[# th:each="s : ${todasSedes}"]*/
+    todasLasSedes.push({
+        nombre: /*[[${s.nombreCiudad}]]*/ '',
+        lat: /*[[${s.latitud}]]*/ 0,
+        lng: /*[[${s.longitud}]]*/ 0
+    });
+    /*[/]*/
+
+    const puntosRuta = [];
+    /*[# th:each="sede : ${rutaCompleta}"]*/
+    puntosRuta.push({
+        nombre: /*[[${sede.nombreCiudad}]]*/ '',
+        lat: /*[[${sede.latitud}]]*/ 0,
+        lng: /*[[${sede.longitud}]]*/ 0
+    });
+    /*[/]*/
+
+    const distanciaDijkstra = /*[[${encomienda.distanciaTotalCalculada}]]*/ 0;
+
+    const mapa = L.map('mapa-rastreo');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapa);
+
+    // Función para crear nodos visuales sin usar imágenes externas
+    function crearNodo(color) {
+        return L.divIcon({
+            className: 'custom-nodo',
+            html: `<div class="nodo-mapa" style="background-color: ${color}; width: 14px; height: 14px; color: ${color};"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+            popupAnchor: [0, -10]
+        });
+    }
+
+    const nodoGris = crearNodo('#6b7280');
+    const nodoOrigen = crearNodo('#a855f7');
+    const nodoIntermedio = crearNodo('#eab308');
+    const nodoDestino = crearNodo('#22d3ee');
+
+    todasLasSedes.forEach(sede => {
+        L.marker([sede.lat, sede.lng], { icon: nodoGris })
+            .addTo(mapa)
+            .bindPopup(`<b>Instalación Nexus:</b> Sede ${sede.nombre}<br><span class="text-gray-400">Disponible en Red</span>`);
+    });
+
+    if (puntosRuta.length > 0) {
+        puntosRuta.forEach((punto, index) => {
+            let iconoElegido = nodoIntermedio;
+            let etiqueta = `<b>Escala Crítica ${index}:</b> Sede ${punto.nombre}`;
+            
+            if (index === 0) {
+                iconoElegido = nodoOrigen;
+                etiqueta = `<b>Punto de Despacho (Origen):</b> Sede ${punto.nombre}`;
+            } else if (index === puntosRuta.length - 1) {
+                iconoElegido = nodoDestino;
+                etiqueta = `<b>Punto de Retiro (Destino Final):</b> Sede ${punto.nombre}`;
+            }
+
+            L.marker([punto.lat, punto.lng], { icon: iconoElegido })
+                .addTo(mapa)
+                .bindPopup(etiqueta)
+                .openPopup();
+        });
+
+        const coordenadasLimites = puntosRuta.map(p => [p.lat, p.lng]);
+        mapa.fitBounds(coordenadasLimites, { padding: [80, 80] });
+    }
+
+    if (puntosRuta.length > 1) {
+        const coordsString = puntosRuta.map(p => `${p.lng},${p.lat}`).join(';');
+        const urlOSRM = `https://router.project-osrm.org/route/v1/driving/${coordsString}?overview=full&geometries=geojson`;
+
+        fetch(urlOSRM)
+            .then(response => {
+                if (!response.ok) throw new Error("Conexión con OSRM interrumpida");
+                return response.json();
+            })
+            .then(data => {
+                if (data.routes && data.routes.length > 0) {
+                    const coordenadasLinea = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    
+                    L.polyline(coordenadasLinea, {
+                        color: '#00F0FF',
+                        weight: 5,
+                        opacity: 0.9
+                    }).addTo(mapa)
+                    .bindPopup(`<b>Logística Computada</b><br>Trayecto Terrestre Oficial.<br>Distancia: ${distanciaDijkstra.toFixed(2)} Km`);
+                } else {
+                    trazarLineaRectaRespaldo();
+                }
+            })
+            .catch(error => {
+                trazarLineaRectaRespaldo();
+            });
+    }
+
+    function trazarLineaRectaRespaldo() {
+        const lineaDirecta = puntosRuta.map(p => [p.lat, p.lng]);
+        L.polyline(lineaDirecta, {
+            color: '#BC13FE',
+            weight: 4,
+            dashArray: '6, 10',
+            opacity: 0.8
+        }).addTo(mapa)
+        .bindPopup(`<b>Enlace de Red Lógica</b><br>Distancia: ${distanciaDijkstra.toFixed(2)} Km`);
+    }
+
+  /*]]>*/
+  </script>
+</body>
+</html>

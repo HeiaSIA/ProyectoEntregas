@@ -19,11 +19,9 @@ public class Sede {
     @Column(nullable = false)
     private Double longitud;
 
-    // Constructor vacío (Obligatorio para JPA)
     public Sede() {
     }
 
-    // Constructor con parámetros
     public Sede(String nombreCiudad, Double latitud, Double longitud) {
         this.nombreCiudad = nombreCiudad;
         this.latitud = latitud;

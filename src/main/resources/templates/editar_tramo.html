@@ -6,12 +6,10 @@
 </head>
 <body>
 
-    <!-- Este bloque se extraerá entero y se meterá dentro del modal de nuevo_tramo.html -->
     <div th:fragment="formEditar" id="formEditarContainer">
         
         <form th:action="@{/tramos/actualizar}" th:object="${tramo}" method="post">
             
-            <!-- Campo oculto para asegurar que Spring Boot sepa qué ID actualizar -->
             <input type="hidden" th:field="*{idTramo}">
 
             <label>Sede de Origen</label>
@@ -34,7 +32,7 @@
 
             <label>Distancia Calculada (Km)</label>
             <input type="number" step="any" th:field="*{distanciaKm}" id="editDistancia" readonly required>
-            <div class="info-calculo" id="edit-estado-calculo" style="color: #2563eb;">Calculando coordenadas...</div>
+            <div class="info-calculo" id="edit-estado-calculo">Calculando ruta...</div>
 
             <div class="modal-btn-group">
                 <button type="button" class="btn-modal-cancelar" onclick="cerrarModal()">Cancelar</button>
@@ -42,10 +40,6 @@
             </div>
         </form>
 
-        <!-- Script interno que auto-recalcula la distancia del tramo cargado -->
-        <script>
-            calcularDistanciaEdit();
-        </script>
     </div>
 
 </body>

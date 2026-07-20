@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Gaming - Red de Sedes</title>
     
     <!-- Leaflet API (Mapas) -->
@@ -9,59 +10,74 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
-        body { background:#f4f6f9; min-height:100vh; padding:20px; }
-        
+    :root {
+        --nexus-dark: #0b0c10;
+        --nexus-card: #1f2833;
+        --nexus-purple: #8a2be2;
+        --nexus-cyan: #00f0ff;
+        --nexus-text: #c5c6c7;
+        --nexus-white: #ffffff;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+    body { background: var(--nexus-dark); min-height:100vh; padding:20px; color: var(--nexus-text); }
+    
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        gap: 20px;
+        height: calc(100vh - 40px);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .card { background: var(--nexus-card); border-radius:18px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,.5); border: 1px solid #45a29e; display: flex; flex-direction: column; }
+    
+    .header { background: linear-gradient(90deg, var(--nexus-purple), var(--nexus-cyan)); color: white; padding:25px; }
+    .header h1 { font-size:24px; margin-bottom:5px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    
+    .info-seccion { padding: 25px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+    
+    .conexiones-lista { display: flex; flex-direction: column; gap: 10px; }
+    .conexion-item { background: #0b0c10; padding: 12px 15px; border-left: 4px solid var(--nexus-purple); border-radius: 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .conexion-item span { font-weight: 600; color: var(--nexus-white); }
+    .conexion-item .distancia { background: rgba(0, 240, 255, 0.1); color: var(--nexus-cyan); border: 1px solid var(--nexus-cyan); padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+
+    .btn-volver { 
+        display: block; text-align: center; background: transparent; color: var(--nexus-white); border: 2px solid var(--nexus-purple); 
+        padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: .3s; margin-top: auto;
+    }
+    .btn-volver:hover { background: var(--nexus-purple); box-shadow: 0 0 15px var(--nexus-purple); }
+
+    #mapa-red {
+        width: 100%; height: 100%; border-radius: 18px; border: 1px solid var(--nexus-purple);
+        box-shadow: 0 0 20px rgba(138, 43, 226, 0.2); z-index: 1;
+    }
+    
+    .no-tramos { color: var(--nexus-text); font-style: italic; text-align: center; padding: 20px 0; }
+
+    /* Estilos para adaptarse a dispositivos móviles */
+    @media (max-width: 900px) {
         .dashboard-container {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 20px;
-            height: calc(100vh - 40px);
-            max-width: 1400px;
-            margin: 0 auto;
+            grid-template-columns: 1fr;
+            height: auto;
         }
-
-        .card { background:white; border-radius:18px; overflow:hidden; box-shadow:0 15px 40px rgba(0,0,0,.08); display: flex; flex-direction: column; }
-        .header { background:#2563eb; color:white; padding:25px; }
-        .header h1 { font-size:24px; margin-bottom:5px; }
-        .header p { opacity: 0.9; font-size: 14px; }
-        
-        .info-seccion { padding: 25px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        
-        /* Lista de Conexiones */
-        .conexiones-lista { display: flex; flex-direction: column; gap: 10px; }
-        .conexion-item { background: #eff6ff; padding: 12px 15px; border-left: 4px solid #2563eb; border-radius: 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-        .conexion-item span { font-weight: 600; color: #1e293b; }
-        .conexion-item .distancia { background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 12px; font-size: 12px; }
-
-        .btn-volver { 
-            display: block; 
-            text-align: center; 
-            background: #475569; 
-            color: white; 
-            border: none; 
-            padding: 15px; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            text-decoration: none;
-            transition: .3s; 
-            margin-top: auto;
-        }
-        .btn-volver:hover { background: #334155; transform: translateY(-2px); }
-
         #mapa-red {
-            width: 100%;
-            height: 100%;
-            border-radius: 18px;
-            box-shadow: 0 15px 40px rgba(0,0,0,.08);
-            border: 2px solid #e5e7eb;
-            z-index: 1;
+            min-height: 500px;
         }
-        
-        .no-tramos { color: #6b7280; font-style: italic; text-align: center; padding: 20px 0; }
-    </style>
+        .card {
+            max-height: 400px;
+        }
+    }
+
+    /* Estilos para los marcadores nativos sin imágenes */
+    .nodo-mapa {
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px currentColor;
+    }
+</style>
 </head>
 <body>
 
@@ -77,12 +93,10 @@
             <h3 style="color:#1e293b; font-size: 16px;">Conexiones Activas</h3>
             
             <div class="conexiones-lista">
-                <!-- Mensaje si no hay tramos -->
                 <div th:if="${#lists.isEmpty(listaTramos)}" class="no-tramos">
                     No se han registrado tramos para conectar en el mapa.
                 </div>
                 
-                <!-- Iterar los tramos activos en la barra lateral -->
                 <div class="conexion-item" th:each="tramo : ${listaTramos}">
                     <div>
                         <span th:text="${tramo.sedeOrigen.nombreCiudad}"></span> 
@@ -93,26 +107,22 @@
                 </div>
             </div>
 
-            <!-- Botón para regresar a la gestión principal -->
-            <a href="/tramos" class="btn-volver">⬅️ Volver a Gestión</a>
+            <a href="/tramos" class="btn-volver">Volver a Gestión</a>
         </div>
     </div>
 
-    <!-- Contenedor del Mapa interactivo Leaflet -->
     <div id="mapa-red"></div>
 </div>
 
 <script th:inline="javascript">
 /*<![CDATA[*/
 
-    // 1. Inicializar Mapa apuntando por defecto al centro geográfico de Ecuador
     const mapa = L.map('mapa-red').setView([-1.8312, -78.1834], 7);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mapa);
 
-    // 2. Extraer Sedes desde Thymeleaf de forma segura
     const sedes = [];
     /*[# th:each="s : ${listaSedes}"]*/
     sedes.push({
@@ -123,7 +133,6 @@
     });
     /*[/]*/
 
-    // 3. Extraer Tramos desde Thymeleaf de forma segura
     const tramos = [];
     /*[# th:each="t : ${listaTramos}"]*/
     tramos.push({
@@ -138,22 +147,37 @@
     });
     /*[/]*/
 
-    // 4. Dibujar Sedes como Marcadores Fijos (no arrastrables)
+    // Función para crear nodos visuales nativos HTML/CSS
+    function crearNodo(color) {
+        return L.divIcon({
+            className: 'custom-nodo',
+            html: `<div class="nodo-mapa" style="background-color: ${color}; width: 14px; height: 14px; color: ${color};"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+            popupAnchor: [0, -10]
+        });
+    }
+
+    // Instanciar el color morado de la temática para las sedes
+    const nodoSede = crearNodo('#8a2be2');
+
     const limitesMapa = [];
     sedes.forEach(sede => {
-        const marker = L.marker([sede.lat, sede.lng], { draggable: false })
+        // Se utiliza el marcador nativo optimizado
+        const marker = L.marker([sede.lat, sede.lng], { 
+            icon: nodoSede,
+            draggable: false 
+        })
             .addTo(mapa)
             .bindPopup(`<b>Sede:</b> ${sede.nombre}`);
         
         limitesMapa.push([sede.lat, sede.lng]);
     });
 
-    // Ajustar zoom automático para que quepan todas las ciudades registradas
     if (limitesMapa.length > 0) {
         mapa.fitBounds(limitesMapa, { padding: [50, 50] });
     }
 
-    // 5. Dibujar cada uno de los tramos independientes vía OSRM
     tramos.forEach(tramo => {
         const urlOSRM = `https://router.project-osrm.org/route/v1/driving/${tramo.origenLng},${tramo.origenLat};${tramo.destinoLng},${tramo.destinoLat}?overview=full&geometries=geojson`;
 
@@ -166,9 +190,8 @@
                 if (data.routes && data.routes.length > 0) {
                     const coordenadasRuta = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
                     
-                    // Crear línea sólida azul para la carretera
                     L.polyline(coordenadasRuta, { 
-                        color: '#2563eb', 
+                        color: '#00f0ff', // Se cambió a Cyan para que contraste con los nodos morados
                         weight: 4, 
                         opacity: 0.8 
                     })
@@ -179,12 +202,10 @@
                 }
             })
             .catch(error => { 
-                console.warn(`No se pudo trazar la ruta real para el tramo ID: ${tramo.id}. Usando línea recta.`);
                 trazarLineaRectaRespaldo(tramo); 
             });
     });
 
-    // Función de respaldo en caso de que OSRM falle o no detecte ruta terrestre
     function trazarLineaRectaRespaldo(tramo) {
         const coords = [
             [tramo.origenLat, tramo.origenLng], 

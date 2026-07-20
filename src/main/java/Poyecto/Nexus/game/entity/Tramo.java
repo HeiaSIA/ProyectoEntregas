@@ -24,7 +24,6 @@ public class Tramo {
     @Column(nullable = false)
     private Double distanciaKm;
 
-    // Constructor vacío
     public Tramo() {}
 
     public Tramo(Sede sedeOrigen, Sede sedeDestino, Double distanciaKm) {
@@ -33,7 +32,6 @@ public class Tramo {
         this.distanciaKm = distanciaKm;
     }
 
-    // Getters y Setters
     public Long getIdTramo() {
         return idTramo;
     }

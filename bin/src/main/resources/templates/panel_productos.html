@@ -3,72 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <title>Nexus Gaming - Panel de Productos</title>
-<<<<<<< HEAD
+
+    <!-- Librería de iconos Boxicons para el lápiz y el basurero -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
     <style>
+        /* Paleta de Colores de Nexus Gaming */
+        :root {
+            --nexus-dark: #0d0e12;
+            --nexus-card: #161920;
+            --nexus-purple: #bc13fe;
+            --nexus-cyan: #00f0ff;
+            --nexus-text: #e2e8f0;
+            --nexus-text-muted: #94a3b8;
+            /* Colores de alertas de stock */
+            --stock-ok: #10b981;
+            --stock-low: #f59e0b;
+            --stock-out: #ef4444;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--nexus-dark);
+            color: var(--nexus-text);
+            padding: 40px;
+            margin: 0;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-image: linear-gradient(to right, var(--nexus-cyan), var(--nexus-purple));
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            margin-bottom: 20px;
         }
 
         .formulario {
             width: 50%;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 30px;
+            background-color: var(--nexus-card);
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            padding: 25px;
+            margin-bottom: 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(188, 19, 254, 0.1);
         }
 
-        input {
+        label {
             display: block;
-            width: 90%;
-            padding: 8px;
-            margin-bottom: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--nexus-cyan);
+            margin-bottom: 8px;
         }
 
-        button {
-            padding: 8px 15px;
+        input, select {
+            display: block;
+            width: 95%;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+            background-color: var(--nexus-dark);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 6px;
+            color: var(--nexus-text);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--nexus-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        select option {
+            background-color: var(--nexus-card);
+            color: var(--nexus-text);
+        }
+
+        /* Contenedor de Botones de Acción en el Formulario */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
             cursor: pointer;
-            background-color: #007BFF;
+            background: linear-gradient(to right, var(--nexus-purple), #6366f1);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
         }
         
-        button:hover {
-            background-color: #0056b3;
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
         }
 
+        .btn-cancelar {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #334155;
+            color: var(--nexus-text);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #475569;
+        }
+
+        /* Tabla de Inventario */
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-top: 25px;
+            background-color: var(--nexus-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         table th,
         table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+            padding: 14px;
             text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
         }
 
         table th {
-            background-color: #f2f2f2;
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--nexus-cyan);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        table tbody tr:hover {
+            background-color: rgba(188, 19, 254, 0.03);
         }
 
         img {
-            border-radius: 5px;
+            border-radius: 8px;
             object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Insignias de Stock Neón */
+        .badge-stock {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .stock-alto {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--stock-ok);
+            border: 1px solid var(--stock-ok);
+            text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+        }
+
+        .stock-bajo {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--stock-low);
+            border: 1px solid var(--stock-low);
+            text-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+        }
+
+        .sin-stock {
+            background-color: rgba(239, 104, 104, 0.1);
+            color: var(--stock-out);
+            border: 1px solid var(--stock-out);
+            text-shadow: 0 0 5px rgba(239, 104, 104, 0.5);
+        }
+
+        /* Botones de acción dentro de la tabla */
+        .btn-editar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #eab308;
+            color: #000;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-right: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-eliminar {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #ef4444;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-editar:hover {
+            background-color: #ca8a04;
+            transform: translateY(-1px);
+        }
+
+        .btn-eliminar:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
         }
 
         /* Estilos para los mensajes de error */
         .alerta-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
             width: 50%;
+            font-size: 14px;
+        }
+        
+        /* Contenedor de visibilidad neón */
+        .visibilidad-container {
+            border: 1px dashed rgba(188, 19, 254, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-bottom: 0;
+            cursor: pointer;
+            accent-color: var(--nexus-purple);
+        }
+
+        .checkbox-group label {
+            display: inline;
+            margin-bottom: 0;
+            color: var(--nexus-text);
+            cursor: pointer;
+            text-transform: none;
+            font-size: 14px;
+            letter-spacing: normal;
+        }
+
+        /* Badges de Visibilidad */
+        .badge-visibilidad {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .vis-si {
+            background-color: rgba(0, 240, 255, 0.1);
+            color: var(--nexus-cyan);
+            border: 1px solid var(--nexus-cyan);
+        }
+        .vis-no {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--nexus-text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 
@@ -77,13 +314,16 @@
 
 <h2>Añadir Nuevo Componente/Juego</h2>
 
-<!-- SECCIÓN NUEVA: Mostrar errores enviados por el controlador -->
+<!-- Mostrar errores enviados por el controlador -->
 <div th:if="${param.error}" class="alerta-error">
     <span th:if="${param.error[0] == 'imagenVacia'}">
         ⚠️ Error: Debes seleccionar una imagen obligatoriamente.
     </span>
     <span th:if="${param.error[0] == 'errorSubiendoArchivo'}">
         ⚠️ Error: Hubo un problema interno al guardar la imagen en el servidor. Revisa la consola.
+    </span>
+    <span th:if="${param.error[0] == 'productoNoEncontrado'}">
+        ⚠️ Error: El producto solicitado no existe o fue eliminado.
     </span>
 </div>
 
@@ -93,6 +333,9 @@
           th:object="${nuevoProducto}"
           method="post"
           enctype="multipart/form-data">
+
+        <!-- Campo oculto para almacenar la ID cuando estamos editando -->
+        <input type="hidden" th:field="*{idProducto}" />
 
         <label>Nombre del Producto:</label>
         <input
@@ -115,22 +358,84 @@
                 placeholder="0.00"
                 required>
 
+        <!-- CORRECCIÓN: Quitamos th:field porque Producto ya no maneja stock interno -->
+        <label>Stock (Cantidad):</label>
+        <input
+                type="number"
+                min="0"
+                name="stock"
+                th:value="${stockActual != null ? stockActual : ''}"
+                placeholder="Ej: 15"
+                required>
+
+        <!-- CORRECCIÓN: Añadida lógica th:selected para pre-marcar la sede correcta en modo Edición -->
+        <label>Sede Física de Almacenamiento (Origen de Envíos):</label>
+        <select name="idSedeInventario" required>
+            <option value="" disabled th:selected="${sedeActualId == null}">-- Selecciona la sede física de este lote --</option>
+            <option th:each="sede : ${listaSedes}"
+                    th:value="${sede.idSede}"
+                    th:text="${sede.nombreCiudad}"
+                    th:selected="${sedeActualId != null and sedeActualId == sede.idSede}">
+            </option>
+        </select>
+
+        <!-- Categoría del Componente -->
+        <label>Categoría del Componente:</label>
+        <select th:field="*{categoriaComponente}" required>
+            <option th:each="cat : ${T(Poyecto.Nexus.game.entity.CategoriaComponente).values()}"
+                    th:value="${cat}" 
+                    th:text="${cat}">
+            </option>
+        </select>
+
+        <!-- Garantía Editable -->
+        <label>Tiempo de Garantía:</label>
+        <input
+                type="text"
+                th:field="*{garantia}"
+                placeholder="Ej: 12 meses, 2 años de fábrica"
+                required>
+
+        <!-- Destinos de Publicación -->
+        <div class="visibilidad-container">
+            <label style="color: var(--nexus-purple); margin-bottom: 12px;">📍 Destinos de Publicación</label>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="disponibleCatalogo" th:field="*{disponibleCatalogo}">
+                <label for="disponibleCatalogo">Mostrar este producto en el Catálogo General</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="disponibleArmarPc" th:field="*{disponibleArmarPc}">
+                <label for="disponibleArmarPc">Habilitar pieza en el asistente "Armar tu PC"</label>
+            </div>
+        </div>
+
         <label>Imagen del producto:</label>
         <input
                 type="file"
                 name="archivoImagen"
                 accept="image/*"
-                required>
+                th:required="${nuevoProducto.idProducto == null}">
 
-        <button type="submit">
-            Guardar Producto
-        </button>
+        <!-- Botones de Control -->
+        <div class="form-actions">
+            <button type="submit" th:text="${nuevoProducto.idProducto != null ? 'Actualizar Producto' : 'Guardar Producto'}">
+                Guardar Producto
+            </button>
+            
+            <a th:if="${nuevoProducto.idProducto != null}" 
+               th:href="@{/productos}" 
+               class="btn-cancelar">
+                Cancelar
+            </a>
+        </div>
 
     </form>
 
 </div>
 
-<h2>Inventario Global (Catálogo)</h2>
+<h2>Inventario Real por Sede (Catálogo)</h2>
 
 <table>
 
@@ -141,29 +446,69 @@
         <th>Nombre</th>
         <th>Descripción</th>
         <th>Precio</th>
+        <th>Sede Física</th> <!-- NUEVA COLUMNA ARQUITECTÓNICA -->
+        <th>Stock Real</th> 
+        <th>Garantía</th>
+        <th>Catálogo</th>
+        <th>Armar PC</th>
+        <th>Acciones</th>
     </tr>
     </thead>
 
     <tbody>
-    <tr th:each="prod : ${listaProductos}">
+    <!-- CORRECCIÓN: Iteramos sobre listaInventario (entidad InventarioSede) -->
+    <tr th:each="inv : ${listaInventario}">
 
-        <td th:text="${prod.idProducto}"></td>
+        <td th:text="${inv.producto.idProducto}"></td>
 
         <td>
-            <!-- Asegúrate de que las imágenes estáticas estén configuradas en Spring Boot -->
-            <img th:if="${prod.imagen != null}" 
-                 th:src="@{'/imagenes/' + ${prod.imagen}}"
+            <img th:if="${inv.producto.imagen != null}" 
+                 th:src="@{'/imagenes/' + ${inv.producto.imagen}}"
                  alt="Producto"
                  width="120"
                  height="120">
-            <span th:if="${prod.imagen == null}">Sin imagen</span>
+            <span th:if="${inv.producto.imagen == null}" style="color: var(--nexus-text-muted)">Sin imagen</span>
         </td>
 
-        <td th:text="${prod.nombre}"></td>
+        <td th:text="${inv.producto.nombre}"></td>
 
-        <td th:text="${prod.descripcion}"></td>
+        <td th:text="${inv.producto.descripcion}"></td>
 
-        <td th:text="${'$' + prod.precioBase}"></td>
+        <td th:text="${'$' + #numbers.formatDecimal(inv.producto.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+
+        <!-- Muestra la ciudad de la sede donde se encuentra físicamente este stock -->
+        <td th:text="${inv.sede.nombreCiudad}" style="color: var(--nexus-cyan); font-weight: bold;"></td>
+
+        <td>
+            <span th:if="${inv.stockDisponible > 5}" class="badge-stock stock-alto" th:text="${inv.stockDisponible + ' Uds'}"></span>
+            <span th:if="${inv.stockDisponible <= 5 and inv.stockDisponible > 0}" class="badge-stock stock-bajo" th:text="${inv.stockDisponible + ' ¡Pocas!'}"></span>
+            <span th:if="${inv.stockDisponible == 0 or inv.stockDisponible == null}" class="badge-stock sin-stock">Agotado</span>
+        </td>
+        
+        <td th:text="${inv.producto.garantia}" style="font-weight: 500;"></td>
+
+        <td>
+            <span th:if="${inv.producto.disponibleCatalogo}" class="badge-visibilidad vis-si">Sí</span>
+            <span th:unless="${inv.producto.disponibleCatalogo}" class="badge-visibilidad vis-no">No</span>
+        </td>
+
+        <td>
+            <span th:if="${inv.producto.disponibleArmarPc}" class="badge-visibilidad vis-si">Sí</span>
+            <span th:unless="${inv.producto.disponibleArmarPc}" class="badge-visibilidad vis-no">No</span>
+        </td>
+
+        <td>
+            <a th:href="@{/productos/editar/{id}(id=${inv.producto.idProducto})}" 
+               class="btn-editar">
+                <i class='bx bxs-edit-alt'></i> Editar
+            </a>
+            
+            <a th:href="@{/productos/eliminar/{id}(id=${inv.producto.idProducto})}" 
+               onclick="return confirm('¿Seguro que deseas eliminar este componente del inventario?');"
+               class="btn-eliminar">
+                <i class='bx bxs-trash'></i> Eliminar
+            </a>
+        </td>
 
     </tr>
     </tbody>
@@ -172,54 +517,3 @@
 
 </body>
 </html>
-=======
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .formulario { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; width: 50%; }
-        input { display: block; margin-bottom: 10px; width: 90%; padding: 5px; }
-    </style>
-</head>
-<body>
-
-    <h2>Añadir Nuevo Componente/Juego</h2>
-    
-    <div class="formulario">
-        <!-- El formulario envía los datos a la ruta /productos/guardar del controlador -->
-        <form th:action="@{/productos/guardar}" th:object="${nuevoProducto}" method="post">
-            <label>Nombre del Producto:</label>
-            <input type="text" th:field="*{nombre}" placeholder="Ej: Laptop ASUS ROG Strix G17" required />
-            
-            <label>Descripción:</label>
-            <input type="text" th:field="*{descripcion}" placeholder="Ej: RTX 4060, Ryzen 9" />
-            
-            <label>Precio Base ($):</label>
-            <input type="number" step="0.01" th:field="*{precioBase}" placeholder="0.00" required />
-            
-            <button type="submit">Guardar Producto</button>
-        </form>
-    </div>
-
-    <h2>Inventario Global (Catálogo)</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Precio</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Bucle que recorre todos los productos guardados en Postgres -->
-            <tr th:each="prod : ${listaProductos}">
-                <td th:text="${prod.idProducto}">1</td>
-                <td th:text="${prod.nombre}">Producto</td>
-                <td th:text="${prod.descripcion}">Descripción</td>
-                <td th:text="${'$' + prod.precioBase}">$0.00</td>
-            </tr>
-        </tbody>
-    </table>
->>>>>>> refs/heads/rama-freddy

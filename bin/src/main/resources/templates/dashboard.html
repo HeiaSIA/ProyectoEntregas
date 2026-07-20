@@ -1,107 +1,259 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Gaming - Panel Administrativo</title>
+    
+    <!-- Iconos Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
     <style>
+        /* Paleta de colores */
         :root {
-            --electric-blue: #00f2ff;
-            --neon-purple: #bc13fe;
+            --nexus-dark: #0B0C10;        
+            --nexus-card: #14151F;        
+            --nexus-cyan: #00F0FF;        
+            --nexus-purple: #BC13FE;      
+            --nexus-text: #E2E8F0;        
+            --nexus-text-muted: #94A3B8;  
         }
+
+        /* Configuración general y fondo */
         body { 
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--nexus-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.06) 0%, transparent 40%);
+            color: var(--nexus-text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        h1 { text-shadow: 0 0 10px var(--electric-blue); }
-<<<<<<< HEAD
-        
-        /* Modificado a 3 columnas para que entren las 3 opciones */
-        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 40px; max-width: 1000px; }
-        
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px;
+
+        /* Contenedor principal de la marca */
+        .brand-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
             text-align: center;
-            border: 2px solid var(--neon-purple);
-            border-radius: 20px;
-            text-decoration: none;
-            color: white;
-            transition: 0.3s;
         }
-        .card:hover {
-            background: var(--neon-purple);
-            box-shadow: 0 0 30px var(--neon-purple);
-            transform: scale(1.05);
+
+        /* Estilos y animaciones del logo */
+        .brand-logo {
+            max-width: 220px;
+            height: auto;
+            margin-bottom: 20px;
+            mix-blend-mode: screen; 
+            filter: drop-shadow(0 0 20px rgba(188, 19, 254, 0.5)) 
+                    drop-shadow(0 0 45px rgba(0, 240, 255, 0.3));
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        filter 0.4s ease;
         }
-        .card h2 { margin: 0 0 10px 0; color: var(--electric-blue); font-size: 22px; }
-        .card p { margin: 0; color: #cbd5e1; font-size: 14px; }
         
+        .brand-logo:hover {
+            transform: scale(1.05) rotate(1deg);
+            filter: drop-shadow(0 0 30px rgba(188, 19, 254, 0.7)) 
+                    drop-shadow(0 0 60px rgba(0, 240, 255, 0.5));
+        }
+
+        /* Título principal */
+        h1 { 
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin: 0;
+            text-transform: uppercase;
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-image: linear-gradient(135deg, var(--nexus-cyan), var(--nexus-purple));
+            filter: drop-shadow(0 2px 8px rgba(0, 240, 255, 0.3));
+        }
+
+        /* Subtítulo */
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--nexus-purple);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-weight: 700;
+            margin-top: 8px;
+            text-shadow: 0 0 10px rgba(188, 19, 254, 0.4);
+        }
+
+        /* Grid adaptativo para el menú */
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 25px; 
+            max-width: 1100px; 
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        
+        /* Estilos base de las tarjetas */
+        .card {
+            background: var(--nexus-card);
+            padding: 35px 25px;
+            text-align: center;
+            border: 1px solid rgba(188, 19, 254, 0.15);
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--nexus-text);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Capa de iluminación interna */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(188, 19, 254, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+
+        /* Estilos de los iconos */
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--nexus-cyan);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3));
+            z-index: 2;
+        }
+        
+        .card h2 { 
+            margin: 0 0 10px 0; 
+            color: #FFFFFF; 
+            font-size: 1.25rem; 
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            z-index: 2;
+        }
+        
+        .card p { 
+            margin: 0; 
+            color: var(--nexus-text-muted); 
+            font-size: 0.85rem; 
+            line-height: 1.5;
+            z-index: 2;
+        }
+
+        /* Comportamientos interactivos (Hover) */
+        .card:hover {
+            border-color: var(--nexus-cyan);
+            transform: translateY(-8px);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(0, 240, 255, 0.15);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover .card-icon {
+            color: var(--nexus-purple);
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 10px rgba(188, 19, 254, 0.5));
+        }
+
+        .card:hover h2 {
+            color: var(--nexus-cyan);
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Línea animada inferior */
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--nexus-cyan), var(--nexus-purple));
+            transition: width 0.4s ease;
+            z-index: 3;
+        }
+        
+        .card:hover::after {
+            width: 100%;
+        }
+        
+        /* Adaptación a dispositivos móviles */
         @media(max-width: 900px) {
-            .menu-grid { grid-template-columns: 1fr; }
+            .menu-grid { 
+                grid-template-columns: 1fr;
+                max-width: 450px;
+                gap: 20px;
+            }
+            body {
+                padding: 40px 20px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>NEXUS GAMING - ADMIN PANEL</h1>
-    
+    <!-- Cabecera y Logo -->
+    <div class="brand-container">
+        <img th:src="@{'/imagenes/logo_general .png'}" alt="Nexus Gaming Logo" class="brand-logo">
+        <h1>Nexus Gaming</h1>
+        <div class="subtitle">Panel de Control</div>
+    </div>
+
+    <!-- Cuadrícula del Menú -->
     <div class="menu-grid">
+        
+        <!-- Módulo de Productos -->
         <a href="/productos" class="card">
+            <i class='bx bxs-component card-icon'></i>
             <h2>Administrar Productos</h2>
-            <p>Gestionar hardware y stock</p>
+            <p>Monitorear inventario, actualizar precios y gestionar el stock disponible.</p>
         </a>
         
+        <!-- Módulo de Sedes -->
         <a href="/sedes" class="card">
+            <i class='bx bxs-map-pin card-icon'></i>
             <h2>Administrar Sedes (Nodos)</h2>
-            <p>Gestionar ubicaciones en el mapa</p>
+            <p>Gestionar las ubicaciones físicas de los almacenes y centros logísticos.</p>
         </a>
 
-        <!-- ¡Nueva tarjeta agregada para conectar rutas! -->
-        <a href="/tramos/nuevo" class="card">
+        <!-- Módulo de Tramos -->
+        <a href="/tramos" class="card">
+            <i class='bx bx-git-commit card-icon' style="transform: rotate(45deg);"></i>
             <h2>Conectar Rutas (Aristas)</h2>
-            <p>Enlazar sedes y medir distancias</p>
-=======
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
-        
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px;
-            text-align: center;
-            border: 2px solid var(--neon-purple);
-            border-radius: 20px;
-            text-decoration: none;
-            color: white;
-            transition: 0.3s;
-        }
-        .card:hover {
-            background: var(--neon-purple);
-            box-shadow: 0 0 30px var(--neon-purple);
-            transform: scale(1.05);
-        }
-        .card h2 { margin: 0; color: var(--electric-blue); }
-    </style>
-</head>
-<body>
+            <p>Enlazar nodos, medir distancias físicas y optimizar rutas de entrega.</p>
+        </a>
 
-    <h1>NEXUS GAMING - ADMIN PANEL</h1>
-    
-    <div class="menu-grid">
-        <a href="/productos" class="card">
-            <h2>Administrar Productos</h2>
-            <p>Gestionar hardware y stock</p>
+        <!-- Módulo de Simulación -->
+        <a href="/simular" class="card">
+            <i class='bx bxs-truck card-icon'></i>
+            <h2>Simulador Logístico</h2>
+            <p>Consolidar cargas, calcular rutas óptimas y visualizar el recorrido en el mapa.</p>
         </a>
         
-        <a href="/sedes" class="card">
-            <h2>Administrar Sedes</h2>
-            <p>Gestionar ubicaciones y mapas</p>
->>>>>>> refs/heads/rama-freddy
-        </a>
     </div>
 
 </body>

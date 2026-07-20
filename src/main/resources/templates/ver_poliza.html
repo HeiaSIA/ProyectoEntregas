@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus Gaming - Póliza de Garantías</title>
+    <style>
+        :root {
+            --nexus-dark: #0d0e12;
+            --nexus-card: #161920;
+            --nexus-purple: #bc13fe;
+            --nexus-cyan: #00f0ff;
+            --nexus-text: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--nexus-dark);
+            color: var(--nexus-text);
+            padding: 40px;
+            margin: 0;
+        }
+
+        h2 {
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-image: linear-gradient(to right, var(--nexus-cyan), var(--nexus-purple));
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: var(--nexus-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(188, 19, 254, 0.2);
+        }
+
+        table th, table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table th {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--nexus-cyan);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        table tbody tr:hover {
+            background-color: rgba(0, 240, 255, 0.02);
+        }
+
+        .producto-nombre {
+            font-weight: bold;
+            color: var(--nexus-text);
+            font-size: 15px;
+        }
+
+        .garantia-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            background-color: rgba(188, 19, 254, 0.1);
+            color: #d8b4fe;
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .btn-volver {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 10px 20px;
+            background-color: #1e293b;
+            color: var(--nexus-cyan);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-volver:hover {
+            background-color: rgba(0, 240, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<h2>Control de Pólizas y Coberturas</h2>
+<p class="subtitle">Listado oficial de tiempos de soporte técnico y garantías asignadas por componente.</p>
+
+<table>
+    <thead>
+    <tr>
+        <th style="width: 65%;">Nombre del Componente</th>
+        <th style="width: 35%;">Tiempo de Garantía Legal</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="prod : ${listaProductos}">
+        <td class="producto-nombre" th:text="${prod.nombre}">Nombre del Producto</td>
+        <td>
+            <span class="garantia-badge" th:text="${prod.garantia}">12 meses</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

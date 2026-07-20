@@ -62,7 +62,7 @@
             margin-bottom: 8px;
         }
 
-        input {
+        input, select {
             display: block;
             width: 95%;
             padding: 10px 12px;
@@ -75,10 +75,15 @@
             transition: all 0.3s ease;
         }
 
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: var(--nexus-cyan);
             box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        select option {
+            background-color: var(--nexus-card);
+            color: var(--nexus-text);
         }
 
         /* Contenedor de Botones de Acción en el Formulario */
@@ -250,6 +255,58 @@
             width: 50%;
             font-size: 14px;
         }
+        
+        /* Contenedor de visibilidad neón */
+        .visibilidad-container {
+            border: 1px dashed rgba(188, 19, 254, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-bottom: 0;
+            cursor: pointer;
+            accent-color: var(--nexus-purple);
+        }
+
+        .checkbox-group label {
+            display: inline;
+            margin-bottom: 0;
+            color: var(--nexus-text);
+            cursor: pointer;
+            text-transform: none;
+            font-size: 14px;
+            letter-spacing: normal;
+        }
+
+        /* Badges de Visibilidad */
+        .badge-visibilidad {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .vis-si {
+            background-color: rgba(0, 240, 255, 0.1);
+            color: var(--nexus-cyan);
+            border: 1px solid var(--nexus-cyan);
+        }
+        .vis-no {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--nexus-text-muted);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 
 </head>
@@ -301,30 +358,72 @@
                 placeholder="0.00"
                 required>
 
-        <!-- NUEVO CAMPO: Cantidad en Stock -->
+        <!-- CORRECCIÓN: Quitamos th:field porque Producto ya no maneja stock interno -->
         <label>Stock (Cantidad):</label>
         <input
                 type="number"
                 min="0"
-                th:field="*{stock}"
+                name="stock"
+                th:value="${stockActual != null ? stockActual : ''}"
                 placeholder="Ej: 15"
                 required>
 
+        <!-- CORRECCIÓN: Añadida lógica th:selected para pre-marcar la sede correcta en modo Edición -->
+        <label>Sede Física de Almacenamiento (Origen de Envíos):</label>
+        <select name="idSedeInventario" required>
+            <option value="" disabled th:selected="${sedeActualId == null}">-- Selecciona la sede física de este lote --</option>
+            <option th:each="sede : ${listaSedes}"
+                    th:value="${sede.idSede}"
+                    th:text="${sede.nombreCiudad}"
+                    th:selected="${sedeActualId != null and sedeActualId == sede.idSede}">
+            </option>
+        </select>
+
+        <!-- Categoría del Componente -->
+        <label>Categoría del Componente:</label>
+        <select th:field="*{categoriaComponente}" required>
+            <option th:each="cat : ${T(Poyecto.Nexus.game.entity.CategoriaComponente).values()}"
+                    th:value="${cat}" 
+                    th:text="${cat}">
+            </option>
+        </select>
+
+        <!-- Garantía Editable -->
+        <label>Tiempo de Garantía:</label>
+        <input
+                type="text"
+                th:field="*{garantia}"
+                placeholder="Ej: 12 meses, 2 años de fábrica"
+                required>
+
+        <!-- Destinos de Publicación -->
+        <div class="visibilidad-container">
+            <label style="color: var(--nexus-purple); margin-bottom: 12px;">📍 Destinos de Publicación</label>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="disponibleCatalogo" th:field="*{disponibleCatalogo}">
+                <label for="disponibleCatalogo">Mostrar este producto en el Catálogo General</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="disponibleArmarPc" th:field="*{disponibleArmarPc}">
+                <label for="disponibleArmarPc">Habilitar pieza en el asistente "Armar tu PC"</label>
+            </div>
+        </div>
+
         <label>Imagen del producto:</label>
-        <!-- No es requerida en edición para evitar obligar al usuario a subirla de nuevo -->
         <input
                 type="file"
                 name="archivoImagen"
                 accept="image/*"
                 th:required="${nuevoProducto.idProducto == null}">
 
-        <!-- Contenedor con comportamiento dinámico para los botones -->
+        <!-- Botones de Control -->
         <div class="form-actions">
             <button type="submit" th:text="${nuevoProducto.idProducto != null ? 'Actualizar Producto' : 'Guardar Producto'}">
                 Guardar Producto
             </button>
             
-            <!-- El botón de cancelar solo se muestra si estamos editando (idProducto != null) -->
             <a th:if="${nuevoProducto.idProducto != null}" 
                th:href="@{/productos}" 
                class="btn-cancelar">
@@ -336,7 +435,7 @@
 
 </div>
 
-<h2>Inventario Global (Catálogo)</h2>
+<h2>Inventario Real por Sede (Catálogo)</h2>
 
 <table>
 
@@ -347,53 +446,65 @@
         <th>Nombre</th>
         <th>Descripción</th>
         <th>Precio</th>
-        <th>Stock</th> <!-- NUEVA COLUMNA -->
+        <th>Sede Física</th> <!-- NUEVA COLUMNA ARQUITECTÓNICA -->
+        <th>Stock Real</th> 
+        <th>Garantía</th>
+        <th>Catálogo</th>
+        <th>Armar PC</th>
         <th>Acciones</th>
     </tr>
     </thead>
 
     <tbody>
-    <tr th:each="prod : ${listaProductos}">
+    <!-- CORRECCIÓN: Iteramos sobre listaInventario (entidad InventarioSede) -->
+    <tr th:each="inv : ${listaInventario}">
 
-        <td th:text="${prod.idProducto}"></td>
+        <td th:text="${inv.producto.idProducto}"></td>
 
         <td>
-            <img th:if="${prod.imagen != null}" 
-                 th:src="@{'/imagenes/' + ${prod.imagen}}"
+            <img th:if="${inv.producto.imagen != null}" 
+                 th:src="@{'/imagenes/' + ${inv.producto.imagen}}"
                  alt="Producto"
                  width="120"
                  height="120">
-            <span th:if="${prod.imagen == null}" style="color: var(--nexus-text-muted)">Sin imagen</span>
+            <span th:if="${inv.producto.imagen == null}" style="color: var(--nexus-text-muted)">Sin imagen</span>
         </td>
 
-        <td th:text="${prod.nombre}"></td>
+        <td th:text="${inv.producto.nombre}"></td>
 
-        <td th:text="${prod.descripcion}"></td>
+        <td th:text="${inv.producto.descripcion}"></td>
 
-        <!-- Precio formateado con 2 decimales y separador de miles -->
-        <td th:text="${'$' + #numbers.formatDecimal(prod.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
+        <td th:text="${'$' + #numbers.formatDecimal(inv.producto.precioBase, 1, 'DEFAULT', 2, 'DEFAULT')}"></td>
 
-        <!-- NUEVA COLUMNA DINÁMICA: Muestra badges de colores de acuerdo a la cantidad -->
+        <!-- Muestra la ciudad de la sede donde se encuentra físicamente este stock -->
+        <td th:text="${inv.sede.nombreCiudad}" style="color: var(--nexus-cyan); font-weight: bold;"></td>
+
         <td>
-            <!-- Si hay más de 5 unidades (Stock Ok) -->
-            <span th:if="${prod.stock > 5}" class="badge-stock stock-alto" th:text="${prod.stock + ' Uds'}"></span>
-            
-            <!-- Si hay entre 1 y 5 unidades (Poco Stock) -->
-            <span th:if="${prod.stock <= 5 and prod.stock > 0}" class="badge-stock stock-bajo" th:text="${prod.stock + ' ¡Pocas!'}"></span>
-            
-            <!-- Si es 0 o nulo (Agotado) -->
-            <span th:if="${prod.stock == 0 or prod.stock == null}" class="badge-stock sin-stock">Agotado</span>
+            <span th:if="${inv.stockDisponible > 5}" class="badge-stock stock-alto" th:text="${inv.stockDisponible + ' Uds'}"></span>
+            <span th:if="${inv.stockDisponible <= 5 and inv.stockDisponible > 0}" class="badge-stock stock-bajo" th:text="${inv.stockDisponible + ' ¡Pocas!'}"></span>
+            <span th:if="${inv.stockDisponible == 0 or inv.stockDisponible == null}" class="badge-stock sin-stock">Agotado</span>
+        </td>
+        
+        <td th:text="${inv.producto.garantia}" style="font-weight: 500;"></td>
+
+        <td>
+            <span th:if="${inv.producto.disponibleCatalogo}" class="badge-visibilidad vis-si">Sí</span>
+            <span th:unless="${inv.producto.disponibleCatalogo}" class="badge-visibilidad vis-no">No</span>
         </td>
 
-        <!-- Columna de Botones de Acción (Editar / Eliminar con Boxicons) -->
         <td>
-            <a th:href="@{/productos/editar/{id}(id=${prod.idProducto})}" 
+            <span th:if="${inv.producto.disponibleArmarPc}" class="badge-visibilidad vis-si">Sí</span>
+            <span th:unless="${inv.producto.disponibleArmarPc}" class="badge-visibilidad vis-no">No</span>
+        </td>
+
+        <td>
+            <a th:href="@{/productos/editar/{id}(id=${inv.producto.idProducto})}" 
                class="btn-editar">
                 <i class='bx bxs-edit-alt'></i> Editar
             </a>
             
-            <a th:href="@{/productos/eliminar/{id}(id=${prod.idProducto})}" 
-               onclick="return confirm('¿Seguro que deseas eliminar este componente?');"
+            <a th:href="@{/productos/eliminar/{id}(id=${inv.producto.idProducto})}" 
+               onclick="return confirm('¿Seguro que deseas eliminar este componente del inventario?');"
                class="btn-eliminar">
                 <i class='bx bxs-trash'></i> Eliminar
             </a>
