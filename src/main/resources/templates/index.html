@@ -24,6 +24,7 @@
 </head>
 <body class="bg-nexusDark text-gray-100 font-sans min-h-screen relative">
 
+  <!-- ================= 1. ENCABEZADO Y NAVEGACIÓN ================= -->
   <header class="border-b border-nexusPurple/30 bg-nexusDark/90 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
       
@@ -44,8 +45,8 @@
         >
         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-nexusCyan">🔍</span>
       </div>
-		<!-- Corriguiendo error de Inicio de sesion  -->
-     <!-- Menú de Usuario / Carrito -->
+
+      <!-- Menú de Usuario / Carrito -->
       <nav class="flex items-center gap-6 text-sm font-semibold">
         <!-- Opciones para usuarios invitados -->
         <div id="menuInvitado" class="flex items-center gap-6">
@@ -132,12 +133,11 @@
         TODO EL PODER PARA TU SETUP
       </h1>
       <p class="text-nexusCyan font-medium text-sm md:text-base tracking-wide uppercase">
-        Envíos ultra rápidos a nivel nacional -- Proximaménte nivel MUNDIAL
+        Envíos ultra rápidos a nivel nacional -- Próximamente nivel MUNDIAL
       </p>
     </div>
 
     <!-- Grid de 4 Columnas ajustable -->
-    <!-- Eliminando opcciones inecesarias -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       
       <!-- Tarjeta 1 - Mi Cuenta -->
@@ -159,9 +159,9 @@
           <h3 class="font-bold text-white mb-2">Garantía Nexus</h3>
           <p class="text-xs text-gray-400 leading-relaxed">Todos tus componentes cuentan con garantía directa de fábrica.</p>
         </div>
-       <button type="button" onclick="window.location.href='/productos/poliza'" class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
-    		Ver póliza
-		</button>
+        <button type="button" onclick="window.location.href='/productos/poliza'" class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
+          Ver póliza
+        </button>
       </div>
 
       <!-- Tarjeta 3 - Lo Más Vendido -->
@@ -184,8 +184,8 @@
           <p class="text-xs text-gray-400 leading-relaxed">Usa nuestro configurador y asegura compatibilidad.</p>
         </div>
         <button type="button" onclick="window.location.href='/armar-pc'" class="mt-4 w-full text-center text-xs text-nexusCyan font-bold hover:text-white transition-colors py-2 border border-nexusCyan/30 rounded-lg group-hover:bg-nexusCyan/20">
-  			Iniciar Setup
-		</button>
+          Iniciar Setup
+        </button>
       </div>
 
     </div>
@@ -297,7 +297,8 @@
       </form>
     </div>
   </div>
-<!-- MODAL DE ACCESO ADMINISTRATIVO -->
+
+  <!-- MODAL DE ACCESO ADMINISTRATIVO -->
   <div id="modalAdmin" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
     <div class="bg-nexusCard rounded-xl border border-red-500/50 p-8 shadow-[0_0_30px_rgba(255,0,0,0.2)] max-w-sm w-full mx-4 relative transform scale-95 transition-transform duration-300">
       
@@ -308,7 +309,7 @@
         <p class="text-xs text-gray-400 mt-1 uppercase">Credenciales de Administrador requeridas</p>
       </div>
 
-      <!-- El formulario viaja a la ruta POST que creamos en Java -->
+      <!-- El formulario viaja a la ruta POST en Java -->
       <form action="/admin/acceso" method="POST" class="space-y-4">
         <div>
           <input type="password" name="clave" placeholder="••••••••" required
@@ -376,7 +377,7 @@
 
     // --- LÓGICA DE ENVÍO DE DATOS DIRECTO AL BACKEND (AJAX) ---
     
-    // 1. Registro de usuario apuntando directamente al puerto local 8080
+    // 1. Registro de usuario (usando ruta relativa para producción y local)
     function enviarRegistro(event) {
       event.preventDefault();
       
@@ -385,7 +386,7 @@
       const password = document.getElementById('regPassword').value;
       const msgArea = document.getElementById('msgRegistro');
 
-      fetch('http://localhost:8080/api/auth/registro', {
+      fetch('/api/auth/registro', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -418,16 +419,15 @@
       });
     }
 
-    // 2. Inicio de Sesión apuntando al puerto local 8080
-  // Corriguiendo Error de que al iniciar sesion te lleve directo a catalogo
-   function enviarLogin(event) {
+    // 2. Inicio de Sesión (usando ruta relativa para producción y local)
+    function enviarLogin(event) {
       event.preventDefault();
 
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
       const msgArea = document.getElementById('msgLogin');
 
-      fetch('http://localhost:8080/api/auth/login', {
+      fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -486,7 +486,8 @@
       actualizarInterfazUsuario(usuarioGuardado);
     });
   </script>
-<!-- Botón discreto que ahora abre el Modal de Seguridad -->
+
+  <!-- Botón discreto que abre el Modal de Seguridad Admin -->
   <button onclick="abrirModal('modalAdmin')" class="fixed bottom-3 right-3 text-[11px] text-gray-400 opacity-60 hover:opacity-100 hover:text-red-500 transition-all duration-300 z-50 cursor-pointer">
     Admin
   </button>
