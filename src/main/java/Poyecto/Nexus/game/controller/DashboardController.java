@@ -3,6 +3,7 @@ package Poyecto.Nexus.game.controller;
 import Poyecto.Nexus.game.service.ProductoService;
 import Poyecto.Nexus.game.repository.InventarioSedeRepository;
 import Poyecto.Nexus.game.repository.SedeRepository;
+import org.springframework.beans.factory.annotation.Value; 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +16,12 @@ public class DashboardController {
 
     private final ProductoService productoService; 
     private final SedeRepository sedeRepository;
-    // 1. CORRECCIÓN: Declaramos la variable de instancia para el repositorio de inventarios
     private final InventarioSedeRepository inventarioSedeRepository;
 
-    // 2. CORRECCIÓN: Agregamos InventarioSedeRepository al constructor para activar la inyección de Spring
+    // Inyectamos la contraseña oculta desde el application.properties
+    @Value("${admin.panel.password}")
+    private String adminPassword;
+
     public DashboardController(ProductoService productoService, 
                                SedeRepository sedeRepository, 
                                InventarioSedeRepository inventarioSedeRepository) {
@@ -39,7 +42,6 @@ public class DashboardController {
 
     @GetMapping("/catalogo")
     public String showCatalogo(Model model) {
-        // 3. ¡LISTO! Ahora esta variable ya existe y no dará error de referencia estática
         model.addAttribute("listaInventario", inventarioSedeRepository.findAll());
         model.addAttribute("listaSedes", sedeRepository.findAll()); 
         return "catalogo"; 
@@ -55,7 +57,7 @@ public class DashboardController {
 
     @PostMapping("/admin/acceso")
     public String verificarClave(@RequestParam("clave") String clave, HttpSession session) {
-        if ("Nexus_2026".equals(clave)) {
+        if (adminPassword.equals(clave)) {
             session.setAttribute("adminLogueado", true); 
             return "redirect:/admin"; 
         }

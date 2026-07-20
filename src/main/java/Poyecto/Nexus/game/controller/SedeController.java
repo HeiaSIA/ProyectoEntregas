@@ -2,6 +2,7 @@ package Poyecto.Nexus.game.controller;
 
 import Poyecto.Nexus.game.entity.Sede;
 import Poyecto.Nexus.game.service.SedeService;
+import org.springframework.beans.factory.annotation.Value; // IMPORTANTE: Para inyectar la variable
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,10 @@ public class SedeController {
 
     private final SedeService sedeService;
 
+    // 1. INYECTAMOS LA CLAVE DESDE application.properties
+    @Value("${google.maps.api.key}")
+    private String googleApiKey;
+
     public SedeController(SedeService sedeService) {
         this.sedeService = sedeService;
     }
@@ -23,6 +28,10 @@ public class SedeController {
             model.addAttribute("nuevaSede", new Sede());
         }
         model.addAttribute("listaSedes", sedeService.listarTodas());
+        
+        // 2. PASAMOS LA LLAVE AL MODELO PARA QUE EL HTML LA PUEDA LEER
+        model.addAttribute("googleApiKey", googleApiKey);
+        
         return "panel_sedes";
     }
 

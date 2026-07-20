@@ -398,7 +398,7 @@
 </script>
 
 <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAT191SwT7Bc1S6vAsbmmF_km9SFEzwT64&libraries=places&callback=initMap">
+        th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleApiKey} + '&libraries=places&callback=initMap'}">
 </script>
 
 </body>
